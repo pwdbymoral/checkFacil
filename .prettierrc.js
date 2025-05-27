@@ -2,9 +2,9 @@
 const config = {
   semi: false,
   singleQuote: true,
-  trailingComma: "all",
+  trailingComma: 'all',
   printWidth: 100,
   tabWidth: 2,
-};
+}
 
-export default config;
+export default config
