@@ -11,6 +11,13 @@ router.post(
   validarRegistro,
   authController.registrarConvidado
 );
+
+router.post(
+  "/register/admEspaco",
+  validarRegistro,
+  authController.registrarAdmEspaco
+);
+
 router.post(
   "/register/admFesta",
   validarRegistro,

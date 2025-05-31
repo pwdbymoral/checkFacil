@@ -65,14 +65,14 @@ Usuario.init(
     hooks: {
       beforeCreate: async (usuario) => {
         if (usuario.changed("senha")) {
-          const salt = await bcryptjs.genSalt(10);
-          usuario.senha = await bcryptjs.hash(usuario.senha, salt);
+          const salt = await bcrypt.genSalt(10);
+          usuario.senha = await bcrypt.hash(usuario.senha, salt);
         }
       },
       beforeUpdate: async (usuario) => {
         if (usuario.changed("senha")) {
-          const salt = await bcryptjs.genSalt(10);
-          usuario.senha = await bcryptjs.hash(usuario.senha, salt);
+          const salt = await bcrypt.genSalt(10);
+          usuario.senha = await bcrypt.hash(usuario.senha, salt);
         }
       },
     },
