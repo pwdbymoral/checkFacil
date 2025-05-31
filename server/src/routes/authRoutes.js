@@ -4,7 +4,7 @@ const authController = require("../controllers/authController");
 const {
   validarLogin,
   validarRegistro,
-} = require("../middlewares/authMiddleware");
+} = require("../middleware/validarReqAuth");
 
 router.post(
   "/register/convidado",

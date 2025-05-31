@@ -1,6 +1,6 @@
 const { DataTypes, Model } = require("sequelize");
 const sequelize = require("../config/database");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 const TIPOS_USUARIO = {
   ADM_ESPACO: "Adm_espaco",
@@ -55,7 +55,7 @@ Usuario.init(
         TIPOS_USUARIO.CONVIDADO
       ),
       allowNull: false,
-      defaultValue: TiposUsuario.CONVIDADO,
+      defaultValue: TIPOS_USUARIO.CONVIDADO,
     },
   },
   {
@@ -65,14 +65,14 @@ Usuario.init(
     hooks: {
       beforeCreate: async (usuario) => {
         if (usuario.changed("senha")) {
-          const salt = await bcrypt.genSalt(10);
-          usuario.senha = await bcrypt.hash(usuario.senha, salt);
+          const salt = await bcryptjs.genSalt(10);
+          usuario.senha = await bcryptjs.hash(usuario.senha, salt);
         }
       },
       beforeUpdate: async (usuario) => {
         if (usuario.changed("senha")) {
-          const salt = await bcrypt.genSalt(10);
-          usuario.senha = await bcrypt.hash(usuario.senha, salt);
+          const salt = await bcryptjs.genSalt(10);
+          usuario.senha = await bcryptjs.hash(usuario.senha, salt);
         }
       },
     },
