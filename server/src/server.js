@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const cors = require("cors");
 const sequelize = require("./config/database");
 
 const Usuario = require("./models/Usuarios");
@@ -24,6 +25,7 @@ Object.values(dbModels).forEach((model) => {
   }
 });
 
+app.use(cors());
 app.use(express.json());
 
 // Configuração das Rotas
