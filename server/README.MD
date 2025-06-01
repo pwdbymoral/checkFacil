@@ -1,30 +1,32 @@
-# Documentação da API de Autenticação
+# Documentação da API
 
 ## Informações Gerais
 
 - **URL Base (Exemplo):** `http://localhost:3001` (substitua `3001` pela porta que seu servidor está usando)
 - **Formato do Corpo da Requisição/Resposta:** `JSON`
-- **Headers Comuns para Requisições POST:**
+- **Headers Comuns para Requisições POST/PUT:**
   ```
   Content-Type: application/json
+  ```
+- **Autenticação:** Rotas protegidas requerem um token JWT no cabeçalho `Authorization`.
+  ```
+  Authorization: Bearer SEU_TOKEN_JWT_AQUI
   ```
 
 ---
 
-## Endpoints de Autenticação
-
-Todos os endpoints de autenticação estão sob o prefixo `/auth`.
+## Endpoints de Autenticação (`/auth`)
 
 ### 1. Registrar Novo Convidado
 
 - **Método:** `POST`
 - **Endpoint:** `/auth/register/convidado`
-- **Descrição:** Registra um novo usuário comum do tipo "Convidado". Esta é geralmente a rota pública de cadastro.
+- **Descrição:** Registra um novo usuário comum do tipo "Convidado".
 - **Corpo da Requisição (Request Body):**
   ```json
   {
     "nome": "string (obrigatório)",
-    "email": "string (obrigatório, formato de email válido, deve ser único)",
+    "email": "string (obrigatório, formato de email válido, único)",
     "senha": "string (obrigatório, mínimo 6 caracteres)",
     "telefone": "string (opcional)"
   }
@@ -38,40 +40,16 @@ Todos os endpoints de autenticação estão sob o prefixo `/auth`.
         "id": 1,
         "nome": "Nome do Convidado",
         "email": "convidado@exemplo.com",
-        "telefone": "79999998888", // ou null se não fornecido
+        "telefone": "79999998888",
         "tipoUsuario": "Convidado",
-        "createdAt": "2025-05-31T20:00:00.000Z", // Exemplo de formato de data
-        "updatedAt": "2025-05-31T20:00:00.000Z" // Exemplo de formato de data
+        "createdAt": "2025-06-01T14:00:00.000Z",
+        "updatedAt": "2025-06-01T14:00:00.000Z"
       },
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // Token JWT
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
       "mensagem": "Convidado registrado com sucesso!"
     }
     ```
-- **Respostas de Erro Possíveis (Error Responses):**
-  - **Código:** `400 Bad Request`
-    - Motivo: Dados faltando ou inválidos (ex: email em formato incorreto, senha curta).
-    - Corpo Exemplo:
-      ```json
-      {
-        "error": "Dados inválidos.",
-        "detalhes": ["O email deve ser um endereço de email válido."]
-      }
-      ```
-    - Motivo: Email já cadastrado.
-    - Corpo Exemplo:
-      ```json
-      {
-        "error": "Este email já está cadastrado."
-      }
-      ```
-  - **Código:** `500 Internal Server Error`
-    - Motivo: Falha interna no servidor ao tentar registrar o usuário.
-    - Corpo Exemplo:
-      ```json
-      {
-        "error": "Erro ao registrar convidado."
-      }
-      ```
+- **Respostas de Erro Possíveis:** `400 Bad Request`, `500 Internal Server Error`.
 
 ---
 
@@ -80,36 +58,10 @@ Todos os endpoints de autenticação estão sob o prefixo `/auth`.
 - **Método:** `POST`
 - **Endpoint:** `/auth/register/admEspaco`
 - **Descrição:** Registra um novo usuário do tipo "Administrador de Espaço".
-- **⚠️ ATENÇÃO:** Esta rota é para criação de um usuário com privilégios administrativos. Ela **DEVE SER PROTEGIDA** em um ambiente de produção para garantir que apenas usuários autorizados (ex: outros administradores) possam acessá-la.
-- **Corpo da Requisição (Request Body):**
-  ```json
-  {
-    "nome": "string (obrigatório)",
-    "email": "string (obrigatório, formato de email válido, único)",
-    "senha": "string (obrigatório, mínimo 6 caracteres)",
-    "telefone": "string (opcional)"
-  }
-  ```
-- **Resposta de Sucesso (Success Response):**
-  - **Código:** `201 Created`
-  - **Corpo:**
-    ```json
-    {
-      "usuario": {
-        "id": 2,
-        "nome": "Nome do Adm Espaço",
-        "email": "admespaco@exemplo.com",
-        "telefone": null, // ou o telefone se fornecido
-        "tipoUsuario": "Adm_espaco",
-        "createdAt": "2025-05-31T20:05:00.000Z",
-        "updatedAt": "2025-05-31T20:05:00.000Z"
-      },
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // Token JWT
-      "mensagem": "Administrador de Espaço registrado com sucesso!"
-    }
-    ```
-- **Respostas de Erro Possíveis (Error Responses):**
-  - Similares à rota de "Registrar Convidado", com mensagens de erro que podem especificar "Administrador de Espaço".
+- **⚠️ ATENÇÃO:** Esta rota **DEVE SER PROTEGIDA** em produção.
+- **Corpo da Requisição (Request Body):** (Igual ao de Convidado)
+- **Resposta de Sucesso (Success Response):** (Similar ao de Convidado, mas com `tipoUsuario: "Adm_espaco"` e mensagem apropriada)
+- **Respostas de Erro Possíveis:** `400 Bad Request`, `500 Internal Server Error`.
 
 ---
 
@@ -118,36 +70,10 @@ Todos os endpoints de autenticação estão sob o prefixo `/auth`.
 - **Método:** `POST`
 - **Endpoint:** `/auth/register/admFesta`
 - **Descrição:** Registra um novo usuário do tipo "Administrador de Festa".
-- **⚠️ ATENÇÃO:** Esta rota é para criação de um usuário com privilégios administrativos. Ela **DEVE SER PROTEGIDA** em um ambiente de produção.
-- **Corpo da Requisição (Request Body):**
-  ```json
-  {
-    "nome": "string (obrigatório)",
-    "email": "string (obrigatório, formato de email válido, único)",
-    "senha": "string (obrigatório, mínimo 6 caracteres)",
-    "telefone": "string (opcional)"
-  }
-  ```
-- **Resposta de Sucesso (Success Response):**
-  - **Código:** `201 Created`
-  - **Corpo:**
-    ```json
-    {
-      "usuario": {
-        "id": 3,
-        "nome": "Nome do Adm Festa",
-        "email": "admfesta@exemplo.com",
-        "telefone": "79111112222",
-        "tipoUsuario": "Adm_festa",
-        "createdAt": "2025-05-31T20:10:00.000Z",
-        "updatedAt": "2025-05-31T20:10:00.000Z"
-      },
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // Token JWT
-      "mensagem": "Administrador de Festa registrado com sucesso!"
-    }
-    ```
-- **Respostas de Erro Possíveis (Error Responses):**
-  - Similares à rota de "Registrar Convidado", com mensagens de erro que podem especificar "Administrador de Festa".
+- **⚠️ ATENÇÃO:** Esta rota **DEVE SER PROTEGIDA** em produção.
+- **Corpo da Requisição (Request Body):** (Igual ao de Convidado)
+- **Resposta de Sucesso (Success Response):** (Similar ao de Convidado, mas com `tipoUsuario: "Adm_festa"` e mensagem apropriada)
+- **Respostas de Erro Possíveis:** `400 Bad Request`, `500 Internal Server Error`.
 
 ---
 
@@ -155,7 +81,7 @@ Todos os endpoints de autenticação estão sob o prefixo `/auth`.
 
 - **Método:** `POST`
 - **Endpoint:** `/auth/login`
-- **Descrição:** Autentica um usuário existente (qualquer tipo) e retorna seus dados e um token JWT.
+- **Descrição:** Autentica um usuário existente e retorna seus dados e um token JWT.
 - **Corpo da Requisição (Request Body):**
   ```json
   {
@@ -172,45 +98,119 @@ Todos os endpoints de autenticação estão sob o prefixo `/auth`.
         "id": 1,
         "nome": "Nome do Usuario Logado",
         "email": "usuario@exemplo.com",
-        "telefone": "79999998888", // ou null
+        "telefone": "79999998888",
         "tipoUsuario": "Convidado", // ou Adm_espaco, ou Adm_festa
-        "createdAt": "2025-05-31T20:00:00.000Z",
-        "updatedAt": "2025-05-31T20:15:00.000Z"
+        "createdAt": "2025-06-01T14:00:00.000Z",
+        "updatedAt": "2025-06-01T14:05:00.000Z"
       },
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // Token JWT
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
       "mensagem": "Login realizado com sucesso!"
     }
     ```
-- **Respostas de Erro Possíveis (Error Responses):**
-  - **Código:** `400 Bad Request`
-    - Motivo: Campos `email` ou `senha` faltando na requisição.
-    - Corpo Exemplo:
-      ```json
-      {
-        "error": "Campos obrigatórios: email e senha."
-      }
-      ```
-    - Motivo: Usuário não encontrado com o email fornecido.
-    - Corpo Exemplo:
-      ```json
-      {
-        "error": "Usuário não encontrado."
-      }
-      ```
-    - Motivo: Senha inválida para o email fornecido.
-    - Corpo Exemplo:
-      ```json
-      {
-        "error": "Senha inválida."
-      }
-      ```
+- **Respostas de Erro Possíveis:** `400 Bad Request`, `500 Internal Server Error`.
+
+---
+
+## Endpoints de Festas (`/festa`)
+
+### 1. Criar Nova Festa
+
+- **Método:** `POST`
+- **Endpoint:** `/festa/criar-festa`
+- **Autenticação:** **Obrigatória**. Requer Bearer Token no header `Authorization`.
+  ```
+  Authorization: Bearer SEU_TOKEN_JWT_AQUI
+  ```
+- **Descrição:** Cria um novo registro de festa. O `id_organizador` deve ser o ID de um usuário existente (geralmente um `AdmFesta` ou o ID do usuário logado se ele mesmo for o organizador).
+- **Corpo da Requisição (Request Body):**
+  ```json
+  {
+    "nome_festa": "string (obrigatório)",
+    "data_festa": "string (obrigatório, formato YYYY-MM-DD)",
+    "horario_inicio": "string (opcional, formato HH:MM:SS)",
+    "horario_fim": "string (opcional, formato HH:MM:SS)",
+    "local_festa": "string (opcional)",
+    "descricao": "string (opcional, texto longo)",
+    "pacote_escolhido": "string (opcional, um dos valores: 'KIDS', 'KIDS_MAIS_PARK', 'PLAY', 'PLAY_MAIS_PARK', 'SUPER_FESTA_COMPLETA')",
+    "numero_adultos_contratado": "integer (opcional)",
+    "numero_criancas_contratado": "integer (opcional)",
+    "nome_aniversariante": "string (opcional)",
+    "idade_aniversariante": "integer (opcional)",
+    "tema_festa": "string (opcional)",
+    "festa_deixa_e_pegue": "boolean (opcional)",
+    "autoriza_uso_imagem": "boolean (opcional)",
+    "instagram_cliente": "string (opcional, max 100 caracteres)",
+    "procedimento_convidado_fora_lista": "string (opcional, um dos valores: 'PERMITIR_ANOTAR', 'CHAMAR_ANFITRIAO')",
+    "link_playlist_spotify": "string (opcional)",
+    "observacoes_festa": "string (opcional, texto longo)",
+    "id_organizador": "integer (obrigatório, ID de um usuário existente)"
+  }
+  ```
+- **Resposta de Sucesso (Success Response):**
+  - **Código:** `201 Created`
+  - **Corpo:** O objeto da festa criada (similar ao exemplo abaixo, mas sem o array `festas` e a `mensagem` da listagem).
+    ```json
+    {
+      "id": 4,
+      "nome_festa": "Confraternização da Firma",
+      "data_festa": "2025-12-10",
+      // ... todos os outros campos da festa ...
+      "id_organizador": 1,
+      "createdAt": "2025-06-01T15:00:00.000Z",
+      "updatedAt": "2025-06-01T15:00:00.000Z"
+    }
+    ```
+- **Respostas de Erro Possíveis:**
+  - **Código:** `400 Bad Request` (Dados inválidos, `id_organizador` não existe)
+  - **Código:** `401 Unauthorized` (Token não fornecido, inválido ou expirado)
   - **Código:** `500 Internal Server Error`
-    - Motivo: Falha interna no servidor ao tentar realizar o login.
-    - Corpo Exemplo:
-      ```json
+
+---
+
+### 2. Listar Festas
+
+- **Método:** `GET`
+- **Endpoint:** `/festa/listar-festas`
+- **Autenticação:** **Obrigatória**. Requer Bearer Token no header `Authorization`.
+  ```
+  Authorization: Bearer SEU_TOKEN_JWT_AQUI
+  ```
+- **Descrição:**
+  - Se o usuário logado for um `Adm_espaco`, lista todas as festas cadastradas.
+  - Se o usuário logado for de outro tipo (ex: `Adm_festa`), lista apenas as festas que ele organizou.
+- **Corpo da Requisição (Request Body):** Nenhum.
+- **Resposta de Sucesso (Success Response):**
+  - **Código:** `200 OK`
+  - **Corpo (se houver festas):** Um array de objetos de festa.
+    ```json
+    [
       {
-        "error": "Erro ao fazer login."
+        "id": 1,
+        "nome_festa": "Aniversário da Sofia",
+        "data_festa": "2025-07-15",
+        // ... outros campos da festa ...
+        "id_organizador": 102,
+        "createdAt": "2025-06-01T14:10:00.000Z",
+        "updatedAt": "2025-06-01T14:10:00.000Z",
+        "organizador": {
+          // Informações do organizador incluídas
+          "id": 102,
+          "nome": "Ana Organizadora",
+          "email": "ana.admfesta@exemplo.com"
+        }
       }
-      ```
+      // ... mais festas ...
+    ]
+    ```
+  - **Corpo (se não houver festas):**
+    ```json
+    {
+      "mensagem": "Nenhuma festa cadastrada no espaço.", // ou "Você ainda não tem festas cadastradas."
+      "festas": []
+    }
+    ```
+- **Respostas de Erro Possíveis:**
+  - **Código:** `401 Unauthorized` (Token não fornecido, inválido ou expirado)
+  - **Código:** `500 Internal Server Error`
 
 ---

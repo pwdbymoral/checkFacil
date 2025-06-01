@@ -12,6 +12,13 @@ class Usuario extends Model {
   async compararSenha(senha) {
     return bcrypt.compare(senha, this.senha);
   }
+
+  static associate(models) {
+    this.hasMany(models.Festa, {
+      foreignKey: "id_organizador",
+      as: "festas_organizadas",
+    });
+  }
 }
 
 Usuario.init(
@@ -62,6 +69,7 @@ Usuario.init(
     sequelize,
     modelName: "Usuario",
     tableName: "usuarios",
+    timestamps: true,
     hooks: {
       beforeCreate: async (usuario) => {
         if (usuario.changed("senha")) {
@@ -79,6 +87,6 @@ Usuario.init(
   }
 );
 
-Usuario.TIPOS_USUARIO = TIPOS_USUARIO; // Exportando os tipos de usuário
+Usuario.TIPOS_USUARIO = TIPOS_USUARIO;
 
 module.exports = Usuario;
