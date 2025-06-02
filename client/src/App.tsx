@@ -2,6 +2,7 @@ import './App.css'
 import { Routes, Route, Link } from 'react-router-dom'
 
 import { Button } from './components/ui/button'
+import LoginPage from './pages/LoginPage'
 
 function HomePagePlaceholder() {
   return (
@@ -13,21 +14,6 @@ function HomePagePlaceholder() {
         <Button asChild>
           <Link to="/login">Ir para Login do Staff</Link>
         </Button>
-      </nav>
-    </div>
-  )
-}
-
-function LoginPagePlaceholder() {
-  return (
-    <div>
-      <h1>Página de Login do Staff</h1>
-      <p>Aqui construiremos o formulário de login</p>
-      <nav>
-        <p>Navegue para:</p>
-        <Link to="/">
-          <Button>Voltar para a Home</Button>
-        </Link>
       </nav>
     </div>
   )
@@ -51,7 +37,7 @@ function App() {
       <main style={{ padding: '1rem' }}>
         <Routes>
           <Route path="/" element={<HomePagePlaceholder />} />
-          <Route path="/login" element={<LoginPagePlaceholder />} />
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </main>
       <footer
