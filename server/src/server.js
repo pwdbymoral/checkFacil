@@ -28,7 +28,7 @@ Object.values(dbModels).forEach((model) => {
 app.use(cors());
 app.use(express.json());
 
-// Configuração das Rotas
+// Rotas
 app.use("/auth", authRoutes);
 app.use("/festa", festaRoutes);
 
