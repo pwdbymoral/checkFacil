@@ -1,8 +1,10 @@
 import './App.css'
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, useNavigate } from 'react-router-dom'
+import { Divide } from 'lucide-react'
 
-import { Button } from './components/ui/button'
-import LoginPage from './pages/LoginPage'
+import { Button } from '@/components/ui/button'
+import LoginPage from '@/pages/LoginPage'
+import { useAuth } from '@/contexts/AuthContext'
 
 function HomePagePlaceholder() {
   return (
@@ -20,6 +22,13 @@ function HomePagePlaceholder() {
 }
 
 function App() {
+  const auth = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    auth.logout()
+    navigate('/login')
+  }
   return (
     <div>
       <header style={{ padding: '1rem', backgroundColor: '#f0f0f0', marginBottom: '1rem' }}>
@@ -33,7 +42,18 @@ function App() {
             </li>
           </ul>
         </nav>
+        {auth.isAuthenticated ? (
+          <div className="flex, items-center gap-4">
+            <span>Olá, {auth.user?.name || auth.user?.email}!</span>
+            <Button onClick={handleLogout} variant="outline" size="sm">
+              Sair
+            </Button>
+          </div>
+        ) : (
+          <span className="text-sm text-muted-foreground">Você não está logado.</span>
+        )}
       </header>
+
       <main style={{ padding: '1rem' }}>
         <Routes>
           <Route path="/" element={<HomePagePlaceholder />} />

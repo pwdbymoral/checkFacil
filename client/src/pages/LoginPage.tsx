@@ -22,6 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { useAuth } from '@/contexts/AuthContext'
 
 const loginFormSchema = z.object({
   email: z
@@ -40,6 +41,7 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
   const navigate = useNavigate()
+  const auth = useAuth()
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -57,7 +59,16 @@ const LoginPage = () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500))
       if (values.email === 'staff@espacocriar.com' && values.password === 'password123') {
-        console.log('LLogin simulado com sucesso!')
+        const simulatedUserData = {
+          id: 'staff1',
+          email: values.email,
+          name: 'Staff User',
+        }
+        const simulatedToken = 'fake-jwt-token'
+
+        auth.login(simulatedUserData, simulatedToken)
+
+        console.log('Login bem-sucedido:', simulatedUserData)
         navigate('/')
       } else {
         throw new Error('Email ou senha inválidos. Tente novamente.')
