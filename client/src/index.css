@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -43,71 +43,71 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --background: rgb(255, 255, 255); /* Branco */
+  --foreground: rgb(51, 51, 51); /* Cinza Escuro */
+  --card: rgb(255, 255, 255); /* Branco */
+  --card-foreground: rgb(51, 51, 51); /* Cinza Escuro */
+  --popover: rgb(255, 255, 255); /* Branco */
+  --popover-foreground: rgb(51, 51, 51); /* Cinza Escuro */
+  --primary: rgb(138, 92, 166); /* Roxo Principal */
+  --primary-foreground: rgb(255, 255, 255); /* Branco */
+  --secondary: rgb(244, 188, 62); /* Amarelo Secundário */
+  --secondary-foreground: rgb(51, 51, 51); /* Cinza Escuro */
+  --muted: rgb(245, 245, 245); /* Cinza Claro */
+  --muted-foreground: rgb(102, 102, 102); /* Cinza Médio */
+  --accent: rgb(86, 199, 220); /* Azul Terciário */
+  --accent-foreground: rgb(51, 51, 51); /* Cinza Escuro */
+  --destructive: rgb(220, 53, 69); /* Vermelho */
+  --border: rgb(229, 229, 229); /* Cinza Mais Claro */
+  --input: rgb(245, 245, 245); /* Cinza Claro */
+  --ring: rgb(138, 92, 166); /* Roxo Principal */
+  --chart-1: rgb(138, 92, 166); /* Roxo Principal */
+  --chart-2: rgb(244, 188, 62); /* Amarelo Secundário */
+  --chart-3: rgb(86, 199, 220); /* Azul Terciário */
+  --chart-4: rgb(173, 127, 168); /* Variação do Roxo */
+  --chart-5: rgb(255, 213, 102); /* Variação do Amarelo */
+  --sidebar: rgb(245, 245, 245); /* Cinza Claro */
+  --sidebar-foreground: rgb(51, 51, 51); /* Cinza Escuro */
+  --sidebar-primary: rgb(138, 92, 166); /* Roxo Principal */
+  --sidebar-primary-foreground: rgb(255, 255, 255); /* Branco */
+  --sidebar-accent: rgb(86, 199, 220); /* Azul Terciário */
+  --sidebar-accent-foreground: rgb(51, 51, 51); /* Cinza Escuro */
+  --sidebar-border: rgb(229, 229, 229); /* Cinza Mais Claro */
+  --sidebar-ring: rgb(138, 92, 166); /* Roxo Principal */
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: rgb(34, 34, 34); /* Cinza Escuro */
+  --foreground: rgb(245, 245, 245); /* Cinza Claro */
+  --card: rgb(51, 51, 51); /* Cinza Mais Escuro */
+  --card-foreground: rgb(245, 245, 245); /* Cinza Claro */
+  --popover: rgb(51, 51, 51); /* Cinza Mais Escuro */
+  --popover-foreground: rgb(245, 245, 245); /* Cinza Claro */
+  --primary: rgb(173, 127, 208); /* Roxo Mais Claro */
+  --primary-foreground: rgb(34, 34, 34); /* Cinza Escuro */
+  --secondary: rgb(255, 213, 102); /* Amarelo Mais Claro */
+  --secondary-foreground: rgb(34, 34, 34); /* Cinza Escuro */
+  --muted: rgb(51, 51, 51); /* Cinza Mais Escuro */
+  --muted-foreground: rgb(170, 170, 170); /* Cinza Médio Claro */
+  --accent: rgb(127, 229, 252); /* Azul Mais Claro */
+  --accent-foreground: rgb(34, 34, 34); /* Cinza Escuro */
+  --destructive: rgb(255, 87, 99); /* Vermelho Mais Claro */
+  --border: rgba(255, 255, 255, 0.1); /* Borda Clara */
+  --input: rgba(255, 255, 255, 0.15); /* Input Claro */
+  --ring: rgb(173, 127, 208); /* Roxo Mais Claro */
+  --chart-1: rgb(173, 127, 208); /* Roxo Mais Claro */
+  --chart-2: rgb(255, 213, 102); /* Amarelo Mais Claro */
+  --chart-3: rgb(127, 229, 252); /* Azul Mais Claro */
+  --chart-4: rgb(208, 161, 239); /* Variação do Roxo Claro */
+  --chart-5: rgb(255, 238, 153); /* Variação do Amarelo Claro */
+  --sidebar: rgb(51, 51, 51); /* Cinza Mais Escuro */
+  --sidebar-foreground: rgb(245, 245, 245); /* Cinza Claro */
+  --sidebar-primary: rgb(173, 127, 208); /* Roxo Mais Claro */
+  --sidebar-primary-foreground: rgb(34, 34, 34); /* Cinza Escuro */
+  --sidebar-accent: rgb(127, 229, 252); /* Azul Mais Claro */
+  --sidebar-accent-foreground: rgb(34, 34, 34); /* Cinza Escuro */
+  --sidebar-border: rgba(255, 255, 255, 0.1); /* Borda Clara */
+  --sidebar-ring: rgb(173, 127, 208); /* Roxo Mais Claro */
 }
 
 @layer base {
