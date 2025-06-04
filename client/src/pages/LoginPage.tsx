@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/authContextCore'
 
 const loginFormSchema = z.object({
   email: z
@@ -69,7 +69,7 @@ const LoginPage = () => {
         auth.login(simulatedUserData, simulatedToken)
 
         console.log('Login bem-sucedido:', simulatedUserData)
-        navigate('/')
+        navigate('/staff/dashboard', { replace: true })
       } else {
         throw new Error('Email ou senha inválidos. Tente novamente.')
       }
