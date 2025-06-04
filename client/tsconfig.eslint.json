@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.app.json", // Correctly extends tsconfig.app.json in the same directory
+  "include": [
+    "src/**/*.ts", // Includes all .ts files under client/src/
+    "src/**/*.tsx", // Includes all .tsx files under client/src/
+    // This covers client/src/App.tsx, client/src/vite-env.d.ts, etc.
+    "vite.config.ts" // Explicitly includes client/vite.config.ts
+  ],
+  "exclude": [
+    "node_modules", // Standard exclusion
+    "dist", // If you have a dist folder in client/
+    "build", // If you have a build folder
+    ".yarn", // Yarn specific folders
+    ".pnp.cjs",
+    ".pnp.loader.mjs"
+  ]
+}
