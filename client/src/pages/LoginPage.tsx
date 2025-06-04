@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,6 +37,10 @@ const loginFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>
 
 const LoginPage = () => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
+  const navigate = useNavigate()
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -43,12 +49,29 @@ const LoginPage = () => {
     },
   })
 
-  function onSubmit(values: LoginFormValues) {
-    console.log('Dados do formulário de login:', values)
+  async function onSubmit(values: LoginFormValues) {
+    setIsLoading(true)
+    setLoginError(null)
+    console.log('Tentando logar com:', values)
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      if (values.email === 'staff@espacocriar.com' && values.password === 'password123') {
+        console.log('LLogin simulado com sucesso!')
+        navigate('/')
+      } else {
+        throw new Error('Email ou senha inválidos. Tente novamente.')
+      }
+    } catch (error) {
+      console.error('Erro ao fazer login:', error)
+      setLoginError(error instanceof Error ? error.message : 'Ocorreu um erro ao fazer login.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Login Staff</CardTitle>
@@ -83,14 +106,17 @@ const LoginPage = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Entrar
+              {loginError && <p className="text-sm font-medium text-destructive">{loginError}</p>}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Entrando...' : 'Entrar'}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col items-center space-y-2">
-          <p className="text-xs text-gray500">Precisa de ajuda? Contate o administrador.</p>
+          <p className="text-xs text-muted-foreground">
+            Precisa de ajuda? Contate o administrador.
+          </p>
         </CardFooter>
       </Card>
     </div>
