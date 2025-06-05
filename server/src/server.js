@@ -1,15 +1,15 @@
-require('dotenv').config();
+import 'dotenv/config';
 
-const express = require('express');
-const cors = require('cors');
-const sequelize = require('./config/database');
+import express from 'express';
+import cors from 'cors';
+import sequelize from './config/database.js';
 
-const Usuario = require('./models/Usuarios');
-const Festa = require('./models/Festa');
+import Usuario from './models/Usuarios.js';
+import Festa from './models/Festa.js';
 
-//ROTAS
-const authRoutes = require('./routes/authRoutes');
-const festaRoutes = require('./routes/festaRoutes');
+// ROTAS
+import authRoutes from './routes/authRoutes.js';
+import festaRoutes from './routes/festaRoutes.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -40,9 +40,11 @@ app.get('/', (req, res) => {
 async function LigarServidor() {
   try {
     await sequelize.authenticate(); // Testa a conexão com o banco
+    // eslint-disable-next-line no-console
     console.log('Conexão com o MySQL estabelecida com sucesso.');
 
     app.listen(port, () => {
+      // eslint-disable-next-line no-console
       console.log(`Servidor rodando na porta ${port} em http://localhost:${port}`);
     });
   } catch (error) {

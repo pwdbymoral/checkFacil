@@ -1,7 +1,7 @@
-const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes, Model } from 'sequelize';
+import sequelize from '../config/database.js';
 
-const TIPOS_PACOTE_FESTA = {
+export const TIPOS_PACOTE_FESTA = {
   KIDS: 'KIDS',
   KIDS_MAIS_PARK: 'KIDS_MAIS_PARK',
   PLAY: 'PLAY',
@@ -9,10 +9,10 @@ const TIPOS_PACOTE_FESTA = {
   SUPER_FESTA_COMPLETA: 'SUPER_FESTA_COMPLETA'
 };
 
-class Festa extends Model {
+export class Festa extends Model {
   static associate(models) {
     this.belongsTo(models.Usuario, {
-      foreignKey: 'id_organizador', //FK
+      foreignKey: 'id_organizador',
       as: 'organizador'
     });
   }
@@ -76,4 +76,4 @@ Festa.init(
 
 Festa.TIPOS_PACOTE_FESTA = TIPOS_PACOTE_FESTA;
 
-module.exports = Festa;
+export default Festa;

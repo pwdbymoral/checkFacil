@@ -1,7 +1,8 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
-function validarRegistro(req, res, next) {
+export function validarRegistro(req, res, next) {
   const { nome, email, senha } = req.body;
 
   if (!nome || !email || !senha) {
@@ -20,7 +21,7 @@ function validarRegistro(req, res, next) {
   next();
 }
 
-function validarLogin(req, res, next) {
+export function validarLogin(req, res, next) {
   const { email, senha } = req.body;
 
   if (!email || !senha) {
@@ -39,7 +40,7 @@ function validarLogin(req, res, next) {
   next();
 }
 
-function verificarTokenJWT(req, res, next) {
+export function verificarTokenJWT(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -84,9 +85,3 @@ function verificarTokenJWT(req, res, next) {
     return res.status(500).json({ error: 'Falha na autenticação do token.' });
   }
 }
-
-module.exports = {
-  validarRegistro,
-  validarLogin,
-  verificarTokenJWT
-};

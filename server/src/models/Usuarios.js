@@ -1,6 +1,6 @@
-const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/database');
-const bcrypt = require('bcryptjs');
+import { DataTypes, Model } from 'sequelize';
+import sequelize from '../config/database.js';
+import bcrypt from 'bcryptjs';
 
 const TIPOS_USUARIO = {
   ADM_ESPACO: 'Adm_espaco',
@@ -89,4 +89,4 @@ Usuario.init(
 
 Usuario.TIPOS_USUARIO = TIPOS_USUARIO;
 
-module.exports = Usuario;
+export default Usuario;

@@ -1,5 +1,5 @@
-const Usuario = require('../models/Usuarios');
-const jwt = require('jsonwebtoken');
+import Usuario from '../models/Usuarios.js';
+import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -14,7 +14,7 @@ function gerarToken(params = {}) {
   });
 }
 
-async function registrarConvidado(req, res) {
+export async function registrarConvidado(req, res) {
   const { nome, email, senha, telefone } = req.body;
 
   try {
@@ -31,7 +31,7 @@ async function registrarConvidado(req, res) {
       tipoUsuario: Usuario.TIPOS_USUARIO.CONVIDADO
     });
 
-    const { senha: _, ...usuarioSemSenha } = usuario.toJSON(); // Remove a senha da resposta
+    const { senha: _, ...usuarioSemSenha } = usuario.toJSON();
 
     return res.status(201).json({
       usuario: usuarioSemSenha,
@@ -48,7 +48,7 @@ async function registrarConvidado(req, res) {
   }
 }
 
-async function login(req, res) {
+export async function login(req, res) {
   const { email, senha } = req.body;
 
   try {
@@ -74,7 +74,7 @@ async function login(req, res) {
   }
 }
 
-async function registrarAdmEspaco(req, res) {
+export async function registrarAdmEspaco(req, res) {
   const { nome, email, senha, telefone } = req.body;
 
   try {
@@ -108,7 +108,7 @@ async function registrarAdmEspaco(req, res) {
   }
 }
 
-async function registrarAdmFesta(req, res) {
+export async function registrarAdmFesta(req, res) {
   const { nome, email, senha, telefone } = req.body;
 
   try {
@@ -141,10 +141,3 @@ async function registrarAdmFesta(req, res) {
     return res.status(500).json({ error: 'Erro ao registrar administrador da festa.' });
   }
 }
-
-module.exports = {
-  registrarConvidado,
-  login,
-  registrarAdmEspaco,
-  registrarAdmFesta
-};

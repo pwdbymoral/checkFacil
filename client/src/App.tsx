@@ -2,10 +2,10 @@ import './App.css'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
-import LoginPage from '@/pages/LoginPage'
 import { useAuth } from '@/contexts/authContextCore'
-import { ProtectedRoute } from '@/router/ProtectedRoute'
+import LoginPage from '@/pages/LoginPage'
 import StaffDashboardPage from '@/pages/StaffDashboardPage'
+import { ProtectedRoute } from '@/router/ProtectedRoute'
 
 function HomePagePlaceholder() {
   return (

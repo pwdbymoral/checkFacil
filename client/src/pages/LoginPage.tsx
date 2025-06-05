@@ -1,11 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
+import * as z from 'zod'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Card,
   CardHeader,
@@ -22,6 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { useAuth } from '@/contexts/authContextCore'
 
 const loginFormSchema = z.object({
@@ -54,7 +54,6 @@ const LoginPage = () => {
   async function onSubmit(values: LoginFormValues) {
     setIsLoading(true)
     setLoginError(null)
-    console.log('Tentando logar com:', values)
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500))
@@ -68,7 +67,6 @@ const LoginPage = () => {
 
         auth.login(simulatedUserData, simulatedToken)
 
-        console.log('Login bem-sucedido:', simulatedUserData)
         navigate('/staff/dashboard', { replace: true })
       } else {
         throw new Error('Email ou senha inválidos. Tente novamente.')

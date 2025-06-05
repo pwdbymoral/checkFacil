@@ -1,7 +1,7 @@
-const Usuario = require('../models/Usuarios');
-const Festa = require('../models/Festa');
+import Usuario from '../models/Usuarios.js';
+import Festa from '../models/Festa.js';
 
-async function criarFesta(req, res) {
+export async function criarFesta(req, res) {
   const {
     nome_festa,
     data_festa,
@@ -63,10 +63,8 @@ async function criarFesta(req, res) {
   }
 }
 
-async function buscarFestas(req, res) {
+export async function buscarFestas(req, res) {
   try {
-    //ID e o tipo do usuário logado,
-
     const idUsuarioLogado = req.usuarioId;
     const tipoUsuarioLogado = req.usuarioTipo;
 
@@ -74,7 +72,7 @@ async function buscarFestas(req, res) {
       include: [
         {
           model: Usuario,
-          as: 'organizador', //  associação
+          as: 'organizador',
           attributes: ['id', 'nome', 'email']
         }
       ],
@@ -82,10 +80,9 @@ async function buscarFestas(req, res) {
     };
 
     let festas;
-    let mensagemNenhumaFesta = 'Nenhuma festa encontrada.'; // Mensagem padrão
+    let mensagemNenhumaFesta = 'Nenhuma festa encontrada.';
 
     if (tipoUsuarioLogado === Usuario.TIPOS_USUARIO.ADM_ESPACO) {
-      // AdmEspaco: Busca todas as festas
       festas = await Festa.findAll(queryOptions);
       mensagemNenhumaFesta = 'Nenhuma festa cadastrada no espaço.';
     } else {
@@ -104,8 +101,3 @@ async function buscarFestas(req, res) {
     return res.status(500).json({ error: 'Falha ao listar festas.' });
   }
 }
-
-module.exports = {
-  criarFesta,
-  buscarFestas
-};

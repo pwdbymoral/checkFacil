@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import authController from '../controllers/authController.js';
+import { validarLogin, validarRegistro } from '../middleware/validarReqAuth.js';
+
 const router = express.Router();
-const authController = require('../controllers/authController');
-const { validarLogin, validarRegistro } = require('../middleware/validarReqAuth');
 
 router.post('/register/convidado', validarRegistro, authController.registrarConvidado);
 
@@ -12,4 +13,4 @@ router.post('/register/admEspaco', validarRegistro, authController.registrarAdmE
 
 router.post('/login', validarLogin, authController.login);
 
-module.exports = router;
+export default router;
