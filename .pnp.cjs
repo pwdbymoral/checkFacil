@@ -37,6 +37,7 @@ const RAW_RUNTIME_STATE =
       [null, {\
         "packageLocation": "./",\
         "packageDependencies": [\
+          ["@eslint/json", "npm:0.12.0"],\
           ["@types/node", "npm:22.15.29"],\
           ["@typescript-eslint/eslint-plugin", "virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:6.21.0"],\
           ["@typescript-eslint/parser", "virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:6.21.0"],\
@@ -51,6 +52,7 @@ const RAW_RUNTIME_STATE =
           ["eslint-plugin-react-refresh", "virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:0.4.20"],\
           ["globals", "npm:16.2.0"],\
           ["prettier", "npm:3.5.3"],\
+          ["prettier-plugin-tailwindcss", "virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:0.6.12"],\
           ["typescript", "patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"]\
         ],\
         "linkType": "SOFT"\
@@ -661,6 +663,24 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@eslint/core", [\
+      ["npm:0.12.0", {\
+        "packageLocation": "../../.yarn/berry/cache/@eslint-core-npm-0.12.0-38bccca4dd-10c0.zip/node_modules/@eslint/core/",\
+        "packageDependencies": [\
+          ["@eslint/core", "npm:0.12.0"],\
+          ["@types/json-schema", "npm:7.0.15"]\
+        ],\
+        "linkType": "HARD"\
+      }],\
+      ["npm:0.13.0", {\
+        "packageLocation": "../../.yarn/berry/cache/@eslint-core-npm-0.13.0-53447b33b9-10c0.zip/node_modules/@eslint/core/",\
+        "packageDependencies": [\
+          ["@eslint/core", "npm:0.13.0"],\
+          ["@types/json-schema", "npm:7.0.15"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@eslint/eslintrc", [\
       ["npm:2.1.4", {\
         "packageLocation": "../../.yarn/berry/cache/@eslint-eslintrc-npm-2.1.4-1ff4b5f908-10c0.zip/node_modules/@eslint/eslintrc/",\
@@ -684,6 +704,30 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../.yarn/berry/cache/@eslint-js-npm-8.57.1-dec269f278-10c0.zip/node_modules/@eslint/js/",\
         "packageDependencies": [\
           ["@eslint/js", "npm:8.57.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@eslint/json", [\
+      ["npm:0.12.0", {\
+        "packageLocation": "../../.yarn/berry/cache/@eslint-json-npm-0.12.0-91d17c6235-10c0.zip/node_modules/@eslint/json/",\
+        "packageDependencies": [\
+          ["@eslint/json", "npm:0.12.0"],\
+          ["@eslint/core", "npm:0.12.0"],\
+          ["@eslint/plugin-kit", "npm:0.2.8"],\
+          ["@humanwhocodes/momoa", "npm:3.3.8"],\
+          ["natural-compare", "npm:1.4.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@eslint/plugin-kit", [\
+      ["npm:0.2.8", {\
+        "packageLocation": "../../.yarn/berry/cache/@eslint-plugin-kit-npm-0.2.8-b9d7e2ad65-10c0.zip/node_modules/@eslint/plugin-kit/",\
+        "packageDependencies": [\
+          ["@eslint/plugin-kit", "npm:0.2.8"],\
+          ["@eslint/core", "npm:0.13.0"],\
+          ["levn", "npm:0.4.1"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -728,6 +772,15 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../.yarn/berry/cache/@humanwhocodes-module-importer-npm-1.0.1-9d07ed2e4a-10c0.zip/node_modules/@humanwhocodes/module-importer/",\
         "packageDependencies": [\
           ["@humanwhocodes/module-importer", "npm:1.0.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@humanwhocodes/momoa", [\
+      ["npm:3.3.8", {\
+        "packageLocation": "../../.yarn/berry/cache/@humanwhocodes-momoa-npm-3.3.8-3dd4151ef4-10c0.zip/node_modules/@humanwhocodes/momoa/",\
+        "packageDependencies": [\
+          ["@humanwhocodes/momoa", "npm:3.3.8"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -2476,6 +2529,7 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./",\
         "packageDependencies": [\
           ["checkFacil", "workspace:."],\
+          ["@eslint/json", "npm:0.12.0"],\
           ["@types/node", "npm:22.15.29"],\
           ["@typescript-eslint/eslint-plugin", "virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:6.21.0"],\
           ["@typescript-eslint/parser", "virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:6.21.0"],\
@@ -2490,6 +2544,7 @@ const RAW_RUNTIME_STATE =
           ["eslint-plugin-react-refresh", "virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:0.4.20"],\
           ["globals", "npm:16.2.0"],\
           ["prettier", "npm:3.5.3"],\
+          ["prettier-plugin-tailwindcss", "virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:0.6.12"],\
           ["typescript", "patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"]\
         ],\
         "linkType": "SOFT"\
@@ -5945,6 +6000,92 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./.yarn/unplugged/prettier-npm-3.5.3-787132ce04/node_modules/prettier/",\
         "packageDependencies": [\
           ["prettier", "npm:3.5.3"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["prettier-plugin-tailwindcss", [\
+      ["npm:0.6.12", {\
+        "packageLocation": "../../.yarn/berry/cache/prettier-plugin-tailwindcss-npm-0.6.12-0b1d0314a7-10c0.zip/node_modules/prettier-plugin-tailwindcss/",\
+        "packageDependencies": [\
+          ["prettier-plugin-tailwindcss", "npm:0.6.12"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:0.6.12", {\
+        "packageLocation": "./.yarn/__virtual__/prettier-plugin-tailwindcss-virtual-093a031d29/3/.yarn/berry/cache/prettier-plugin-tailwindcss-npm-0.6.12-0b1d0314a7-10c0.zip/node_modules/prettier-plugin-tailwindcss/",\
+        "packageDependencies": [\
+          ["prettier-plugin-tailwindcss", "virtual:2401caa25416c56a0190787e64cd98ca804810974821a244d0b651c83caba2732a34c9b10ae071e77bd013acae31d3d0af914f2b16400b941df07e2297d4adb7#npm:0.6.12"],\
+          ["@ianvs/prettier-plugin-sort-imports", null],\
+          ["@prettier/plugin-pug", null],\
+          ["@shopify/prettier-plugin-liquid", null],\
+          ["@trivago/prettier-plugin-sort-imports", null],\
+          ["@types/ianvs__prettier-plugin-sort-imports", null],\
+          ["@types/prettier", null],\
+          ["@types/prettier-plugin-astro", null],\
+          ["@types/prettier-plugin-css-order", null],\
+          ["@types/prettier-plugin-import-sort", null],\
+          ["@types/prettier-plugin-jsdoc", null],\
+          ["@types/prettier-plugin-marko", null],\
+          ["@types/prettier-plugin-multiline-arrays", null],\
+          ["@types/prettier-plugin-organize-attributes", null],\
+          ["@types/prettier-plugin-organize-imports", null],\
+          ["@types/prettier-plugin-sort-imports", null],\
+          ["@types/prettier-plugin-style-order", null],\
+          ["@types/prettier-plugin-svelte", null],\
+          ["@types/prettier__plugin-pug", null],\
+          ["@types/shopify__prettier-plugin-liquid", null],\
+          ["@types/trivago__prettier-plugin-sort-imports", null],\
+          ["@types/zackad__prettier-plugin-twig", null],\
+          ["@zackad/prettier-plugin-twig", null],\
+          ["prettier", "npm:3.5.3"],\
+          ["prettier-plugin-astro", null],\
+          ["prettier-plugin-css-order", null],\
+          ["prettier-plugin-import-sort", null],\
+          ["prettier-plugin-jsdoc", null],\
+          ["prettier-plugin-marko", null],\
+          ["prettier-plugin-multiline-arrays", null],\
+          ["prettier-plugin-organize-attributes", null],\
+          ["prettier-plugin-organize-imports", null],\
+          ["prettier-plugin-sort-imports", null],\
+          ["prettier-plugin-style-order", null],\
+          ["prettier-plugin-svelte", null]\
+        ],\
+        "packagePeers": [\
+          "@ianvs/prettier-plugin-sort-imports",\
+          "@prettier/plugin-pug",\
+          "@shopify/prettier-plugin-liquid",\
+          "@trivago/prettier-plugin-sort-imports",\
+          "@types/ianvs__prettier-plugin-sort-imports",\
+          "@types/prettier-plugin-astro",\
+          "@types/prettier-plugin-css-order",\
+          "@types/prettier-plugin-import-sort",\
+          "@types/prettier-plugin-jsdoc",\
+          "@types/prettier-plugin-marko",\
+          "@types/prettier-plugin-multiline-arrays",\
+          "@types/prettier-plugin-organize-attributes",\
+          "@types/prettier-plugin-organize-imports",\
+          "@types/prettier-plugin-sort-imports",\
+          "@types/prettier-plugin-style-order",\
+          "@types/prettier-plugin-svelte",\
+          "@types/prettier",\
+          "@types/prettier__plugin-pug",\
+          "@types/shopify__prettier-plugin-liquid",\
+          "@types/trivago__prettier-plugin-sort-imports",\
+          "@types/zackad__prettier-plugin-twig",\
+          "@zackad/prettier-plugin-twig",\
+          "prettier-plugin-astro",\
+          "prettier-plugin-css-order",\
+          "prettier-plugin-import-sort",\
+          "prettier-plugin-jsdoc",\
+          "prettier-plugin-marko",\
+          "prettier-plugin-multiline-arrays",\
+          "prettier-plugin-organize-attributes",\
+          "prettier-plugin-organize-imports",\
+          "prettier-plugin-sort-imports",\
+          "prettier-plugin-style-order",\
+          "prettier-plugin-svelte",\
+          "prettier"\
         ],\
         "linkType": "HARD"\
       }]\

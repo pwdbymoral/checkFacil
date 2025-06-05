@@ -1,11 +1,11 @@
-const { DataTypes, Model } = require("sequelize");
-const sequelize = require("../config/database");
-const bcrypt = require("bcryptjs");
+const { DataTypes, Model } = require('sequelize');
+const sequelize = require('../config/database');
+const bcrypt = require('bcryptjs');
 
 const TIPOS_USUARIO = {
-  ADM_ESPACO: "Adm_espaco",
-  ADM_FESTA: "Adm_festa",
-  CONVIDADO: "Convidado",
+  ADM_ESPACO: 'Adm_espaco',
+  ADM_FESTA: 'Adm_festa',
+  CONVIDADO: 'Convidado'
 };
 
 class Usuario extends Model {
@@ -15,8 +15,8 @@ class Usuario extends Model {
 
   static associate(models) {
     this.hasMany(models.Festa, {
-      foreignKey: "id_organizador",
-      as: "festas_organizadas",
+      foreignKey: 'id_organizador',
+      as: 'festas_organizadas'
     });
   }
 }
@@ -26,17 +26,17 @@ Usuario.init(
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true,
+      autoIncrement: true
     },
 
     telefone: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
 
     nome: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
 
     email: {
@@ -45,14 +45,14 @@ Usuario.init(
       unique: true,
       validate: {
         isEmail: {
-          msg: "O email deve ser um endereço de email válido.",
-        },
-      },
+          msg: 'O email deve ser um endereço de email válido.'
+        }
+      }
     },
 
     senha: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
 
     tipoUsuario: {
@@ -62,28 +62,28 @@ Usuario.init(
         TIPOS_USUARIO.CONVIDADO
       ),
       allowNull: false,
-      defaultValue: TIPOS_USUARIO.CONVIDADO,
-    },
+      defaultValue: TIPOS_USUARIO.CONVIDADO
+    }
   },
   {
     sequelize,
-    modelName: "Usuario",
-    tableName: "usuarios",
+    modelName: 'Usuario',
+    tableName: 'usuarios',
     timestamps: true,
     hooks: {
       beforeCreate: async (usuario) => {
-        if (usuario.changed("senha")) {
+        if (usuario.changed('senha')) {
           const salt = await bcrypt.genSalt(10);
           usuario.senha = await bcrypt.hash(usuario.senha, salt);
         }
       },
       beforeUpdate: async (usuario) => {
-        if (usuario.changed("senha")) {
+        if (usuario.changed('senha')) {
           const salt = await bcrypt.genSalt(10);
           usuario.senha = await bcrypt.hash(usuario.senha, salt);
         }
-      },
-    },
+      }
+    }
   }
 );
 

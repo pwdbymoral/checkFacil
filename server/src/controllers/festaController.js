@@ -1,5 +1,5 @@
-const Usuario = require("../models/Usuarios");
-const Festa = require("../models/Festa");
+const Usuario = require('../models/Usuarios');
+const Festa = require('../models/Festa');
 
 async function criarFesta(req, res) {
   const {
@@ -21,7 +21,7 @@ async function criarFesta(req, res) {
     procedimento_convidado_fora_lista,
     link_playlist_spotify,
     observacoes_festa,
-    id_organizador,
+    id_organizador
   } = req.body;
 
   try {
@@ -38,34 +38,28 @@ async function criarFesta(req, res) {
       nome_aniversariante: nome_aniversariante || null,
       idade_aniversariante: idade_aniversariante || null,
       tema_festa: tema_festa || null,
-      festa_deixa_e_pegue:
-        festa_deixa_e_pegue === undefined ? null : Boolean(festa_deixa_e_pegue),
-      autoriza_uso_imagem:
-        autoriza_uso_imagem === undefined ? null : Boolean(autoriza_uso_imagem),
+      festa_deixa_e_pegue: festa_deixa_e_pegue === undefined ? null : Boolean(festa_deixa_e_pegue),
+      autoriza_uso_imagem: autoriza_uso_imagem === undefined ? null : Boolean(autoriza_uso_imagem),
       instagram_cliente: instagram_cliente || null,
-      procedimento_convidado_fora_lista:
-        procedimento_convidado_fora_lista || null,
+      procedimento_convidado_fora_lista: procedimento_convidado_fora_lista || null,
       link_playlist_spotify: link_playlist_spotify || null,
       observacoes_festa: observacoes_festa || null,
-      id_organizador,
+      id_organizador
     });
 
     return res.status(201).json(festa);
   } catch (error) {
-    console.error("Erro ao criar festa:", error);
-    if (error.name === "SequelizeValidationError") {
+    console.error('Erro ao criar festa:', error);
+    if (error.name === 'SequelizeValidationError') {
       const erros = error.errors.map((e) => e.message);
-      return res
-        .status(400)
-        .json({ error: "Dados inválidos para criar festa.", detalhes: erros });
+      return res.status(400).json({ error: 'Dados inválidos para criar festa.', detalhes: erros });
     }
-    if (error.name === "SequelizeForeignKeyConstraintError") {
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
       return res.status(400).json({
-        error:
-          "Erro de chave estrangeira: Verifique se o id_organizador é válido.",
+        error: 'Erro de chave estrangeira: Verifique se o id_organizador é válido.'
       });
     }
-    return res.status(500).json({ error: "Falha ao criar festa." });
+    return res.status(500).json({ error: 'Falha ao criar festa.' });
   }
 }
 
@@ -80,40 +74,38 @@ async function buscarFestas(req, res) {
       include: [
         {
           model: Usuario,
-          as: "organizador", //  associação
-          attributes: ["id", "nome", "email"],
-        },
+          as: 'organizador', //  associação
+          attributes: ['id', 'nome', 'email']
+        }
       ],
-      order: [["data_festa", "DESC"]],
+      order: [['data_festa', 'DESC']]
     };
 
     let festas;
-    let mensagemNenhumaFesta = "Nenhuma festa encontrada."; // Mensagem padrão
+    let mensagemNenhumaFesta = 'Nenhuma festa encontrada.'; // Mensagem padrão
 
     if (tipoUsuarioLogado === Usuario.TIPOS_USUARIO.ADM_ESPACO) {
       // AdmEspaco: Busca todas as festas
       festas = await Festa.findAll(queryOptions);
-      mensagemNenhumaFesta = "Nenhuma festa cadastrada no espaço.";
+      mensagemNenhumaFesta = 'Nenhuma festa cadastrada no espaço.';
     } else {
       queryOptions.where = { id_organizador: idUsuarioLogado };
       festas = await Festa.findAll(queryOptions);
-      mensagemNenhumaFesta = "Você ainda não tem festas cadastradas.";
+      mensagemNenhumaFesta = 'Você ainda não tem festas cadastradas.';
     }
 
     if (festas.length === 0) {
-      return res
-        .status(200)
-        .json({ mensagem: mensagemNenhumaFesta, festas: [] });
+      return res.status(200).json({ mensagem: mensagemNenhumaFesta, festas: [] });
     }
 
     return res.status(200).json(festas);
   } catch (error) {
-    console.error("Erro ao listar festas:", error);
-    return res.status(500).json({ error: "Falha ao listar festas." });
+    console.error('Erro ao listar festas:', error);
+    return res.status(500).json({ error: 'Falha ao listar festas.' });
   }
 }
 
 module.exports = {
   criarFesta,
-  buscarFestas,
+  buscarFestas
 };
