@@ -1,8 +1,8 @@
-import './App.css'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/authContextCore'
+import CreateEventPage from '@/pages/events/CreateEventPage'
 import LoginPage from '@/pages/LoginPage'
 import StaffDashboardPage from '@/pages/StaffDashboardPage'
 import { ProtectedRoute } from '@/router/ProtectedRoute'
@@ -86,6 +86,10 @@ function App() {
           <Route
             path="/staff/dashboard"
             element={<ProtectedRoute element={<StaffDashboardPage />} />}
+          />
+          <Route
+            path="/staff/events/create"
+            element={<ProtectedRoute element={<CreateEventPage />} />}
           />
         </Routes>
       </main>

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import * as z from 'zod'
@@ -43,6 +43,14 @@ const LoginPage = () => {
   const navigate = useNavigate()
   const auth = useAuth()
 
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      // eslint-disable-next-line no-console
+      console.info('LoginPage: Usuário já autenticado, redirecionando para o dashboard.')
+      navigate('/staff/dashboard', { replace: true })
+    }
+  }, [auth.isAuthenticated, navigate])
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -77,6 +85,10 @@ const LoginPage = () => {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (auth.isAuthenticated) {
+    return <div className="flex items-center justify-center min-h-screen">Redirecionando...</div>
   }
 
   return (

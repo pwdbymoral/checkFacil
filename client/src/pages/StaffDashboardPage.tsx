@@ -1,11 +1,14 @@
+import { useNavigate } from 'react-router-dom'
+
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/authContextCore'
 
 const StaffDashboardPage = () => {
   const { user } = useAuth()
+  const navigate = useNavigate()
 
   const handleCreateNewEvent = () => {
-    alert('Funcionalidade "Criar Novo Evento" ainda não implementada.')
+    navigate('/staff/events/create')
   }
 
   return (
