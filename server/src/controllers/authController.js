@@ -1,4 +1,4 @@
-import Usuario from '../models/Usuarios.js';
+import models from '../models/index.js';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -18,17 +18,17 @@ export async function registrarConvidado(req, res) {
   const { nome, email, senha, telefone } = req.body;
 
   try {
-    const usuarioExistente = await Usuario.findOne({ where: { email } });
+    const usuarioExistente = await models.Usuario.findOne({ where: { email } });
     if (usuarioExistente) {
       return res.status(400).json({ error: 'Este email já está cadastrado.' });
     }
 
-    const usuario = await Usuario.create({
+    const usuario = await models.Usuario.create({
       nome,
       email,
       senha,
       telefone: telefone || null,
-      tipoUsuario: Usuario.TIPOS_USUARIO.CONVIDADO
+      tipoUsuario: models.Usuario.TIPOS_USUARIO.CONVIDADO
     });
 
     const { senha: _, ...usuarioSemSenha } = usuario.toJSON();
@@ -52,7 +52,7 @@ export async function login(req, res) {
   const { email, senha } = req.body;
 
   try {
-    const usuario = await Usuario.findOne({ where: { email } });
+    const usuario = await models.Usuario.findOne({ where: { email } });
     if (!usuario) {
       return res.status(400).json({ error: 'Usuário não encontrado.' });
     }
@@ -78,17 +78,17 @@ export async function registrarAdmEspaco(req, res) {
   const { nome, email, senha, telefone } = req.body;
 
   try {
-    const usuarioExistente = await Usuario.findOne({ where: { email } });
+    const usuarioExistente = await models.Usuario.findOne({ where: { email } });
     if (usuarioExistente) {
       return res.status(400).json({ error: 'Este email já está cadastrado.' });
     }
 
-    const usuario = await Usuario.create({
+    const usuario = await models.Usuario.create({
       nome,
       email,
       senha,
       telefone: telefone || null,
-      tipoUsuario: Usuario.TIPOS_USUARIO.ADM_ESPACO
+      tipoUsuario: models.Usuario.TIPOS_USUARIO.ADM_ESPACO
     });
 
     const { senha: _, ...usuarioSemSenha } = usuario.toJSON();
@@ -112,17 +112,17 @@ export async function registrarAdmFesta(req, res) {
   const { nome, email, senha, telefone } = req.body;
 
   try {
-    const usuarioExistente = await Usuario.findOne({ where: { email } });
+    const usuarioExistente = await models.Usuario.findOne({ where: { email } });
     if (usuarioExistente) {
       return res.status(400).json({ error: 'Este email já está cadastrado.' });
     }
 
-    const usuario = await Usuario.create({
+    const usuario = await models.Usuario.create({
       nome,
       email,
       senha,
       telefone: telefone || null,
-      tipoUsuario: Usuario.TIPOS_USUARIO.ADM_FESTA
+      tipoUsuario: models.Usuario.TIPOS_USUARIO.ADM_FESTA
     });
 
     const { senha: _, ...usuarioSemSenha } = usuario.toJSON();

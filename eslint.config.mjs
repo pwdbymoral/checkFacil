@@ -7,6 +7,7 @@ import eslintPluginJsxA11y from 'eslint-plugin-jsx-a11y';
 import eslintPluginImport from 'eslint-plugin-import';
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh';
 import eslintConfigPrettier from 'eslint-config-prettier';
+import eslintPluginNode from 'eslint-plugin-node';
 
 export default [
   {
@@ -89,6 +90,10 @@ export default [
       ],
       'import/no-unresolved': ['error', { commonjs: true, caseSensitive: true, ignore: ['^@/'] }],
       'import/prefer-default-export': 'off',
+      'import/no-duplicates': 'warn',
+      'import/no-cycle': ['error', { maxDepth: 5, ignoreExternal: true }],
+      'import/first': 'warn',
+      'import/newline-after-import': ['warn', { count: 1 }],
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
@@ -98,7 +103,11 @@ export default [
           caughtErrorsIgnorePattern: '^_'
         }
       ],
-      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }]
+      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+      'import/no-duplicates': 'warn',
+      'import/no-cycle': ['error', { maxDepth: 5, ignoreExternal: true }],
+      'import/first': 'warn',
+      'import/newline-after-import': ['warn', { count: 1 }]
     }
   },
   {
@@ -117,11 +126,24 @@ export default [
       sourceType: 'module'
     },
     plugins: {
-      import: eslintPluginImport
+      import: eslintPluginImport,
+      node: eslintPluginNode
     },
     rules: {
       'import/no-commonjs': 'error',
-      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }]
+      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+      'import/no-duplicates': 'warn',
+      'import/no-cycle': ['error', { maxDepth: 5, ignoreExternal: true }],
+      'import/first': 'warn',
+      'import/newline-after-import': ['warn', { count: 1 }],
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_'
+        }
+      ]
     }
   },
   eslintConfigPrettier
