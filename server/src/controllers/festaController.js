@@ -1,5 +1,4 @@
-import Usuario from '../models/Usuarios.js';
-import Festa from '../models/Festa.js';
+import models from '../models/index.js';
 
 export async function criarFesta(req, res) {
   const {
@@ -25,7 +24,7 @@ export async function criarFesta(req, res) {
   } = req.body;
 
   try {
-    const festa = await Festa.create({
+    const festa = await models.Festa.create({
       nome_festa,
       data_festa,
       horario_inicio: horario_inicio || null,
@@ -71,7 +70,7 @@ export async function buscarFestas(req, res) {
     let queryOptions = {
       include: [
         {
-          model: Usuario,
+          model: models.Usuario,
           as: 'organizador',
           attributes: ['id', 'nome', 'email']
         }
@@ -82,12 +81,12 @@ export async function buscarFestas(req, res) {
     let festas;
     let mensagemNenhumaFesta = 'Nenhuma festa encontrada.';
 
-    if (tipoUsuarioLogado === Usuario.TIPOS_USUARIO.ADM_ESPACO) {
-      festas = await Festa.findAll(queryOptions);
+    if (tipoUsuarioLogado === models.Usuario.TIPOS_USUARIO.ADM_ESPACO) {
+      festas = await models.Festa.findAll(queryOptions);
       mensagemNenhumaFesta = 'Nenhuma festa cadastrada no espaço.';
     } else {
       queryOptions.where = { id_organizador: idUsuarioLogado };
-      festas = await Festa.findAll(queryOptions);
+      festas = await models.Festa.findAll(queryOptions);
       mensagemNenhumaFesta = 'Você ainda não tem festas cadastradas.';
     }
 

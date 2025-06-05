@@ -9,7 +9,7 @@ export const TIPOS_PACOTE_FESTA = {
   SUPER_FESTA_COMPLETA: 'SUPER_FESTA_COMPLETA'
 };
 
-export class Festa extends Model {
+class Festa extends Model {
   static associate(models) {
     this.belongsTo(models.Usuario, {
       foreignKey: 'id_organizador',
