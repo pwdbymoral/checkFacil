@@ -1,19 +1,19 @@
-const { DataTypes, Model } = require("sequelize");
-const sequelize = require("../config/database");
+import { DataTypes, Model } from 'sequelize';
+import sequelize from '../config/database.js';
 
-const TIPOS_PACOTE_FESTA = {
-  KIDS: "KIDS",
-  KIDS_MAIS_PARK: "KIDS_MAIS_PARK",
-  PLAY: "PLAY",
-  PLAY_MAIS_PARK: "PLAY_MAIS_PARK",
-  SUPER_FESTA_COMPLETA: "SUPER_FESTA_COMPLETA",
+export const TIPOS_PACOTE_FESTA = {
+  KIDS: 'KIDS',
+  KIDS_MAIS_PARK: 'KIDS_MAIS_PARK',
+  PLAY: 'PLAY',
+  PLAY_MAIS_PARK: 'PLAY_MAIS_PARK',
+  SUPER_FESTA_COMPLETA: 'SUPER_FESTA_COMPLETA'
 };
 
-class Festa extends Model {
+export class Festa extends Model {
   static associate(models) {
     this.belongsTo(models.Usuario, {
-      foreignKey: "id_organizador", //FK
-      as: "organizador",
+      foreignKey: 'id_organizador',
+      as: 'organizador'
     });
   }
 }
@@ -23,15 +23,15 @@ Festa.init(
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
-      primaryKey: true,
+      primaryKey: true
     },
     nome_festa: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     data_festa: {
       type: DataTypes.DATEONLY,
-      allowNull: false,
+      allowNull: false
     },
     horario_inicio: { type: DataTypes.TIME, allowNull: true },
     horario_fim: { type: DataTypes.TIME, allowNull: true },
@@ -45,7 +45,7 @@ Festa.init(
         TIPOS_PACOTE_FESTA.PLAY_MAIS_PARK,
         TIPOS_PACOTE_FESTA.SUPER_FESTA_COMPLETA
       ),
-      allowNull: true,
+      allowNull: true
     },
     numero_adultos_contratado: { type: DataTypes.INTEGER, allowNull: true },
     numero_criancas_contratado: { type: DataTypes.INTEGER, allowNull: true },
@@ -56,24 +56,24 @@ Festa.init(
     autoriza_uso_imagem: { type: DataTypes.BOOLEAN, allowNull: true },
     instagram_cliente: { type: DataTypes.STRING(100), allowNull: true },
     procedimento_convidado_fora_lista: {
-      type: DataTypes.ENUM("PERMITIR_ANOTAR", "CHAMAR_ANFITRIAO"),
-      allowNull: true,
+      type: DataTypes.ENUM('PERMITIR_ANOTAR', 'CHAMAR_ANFITRIAO'),
+      allowNull: true
     },
     link_playlist_spotify: { type: DataTypes.STRING, allowNull: true },
     observacoes_festa: { type: DataTypes.TEXT, allowNull: true },
     id_organizador: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-    },
+      allowNull: false
+    }
   },
   {
     sequelize,
-    modelName: "Festa",
-    tableName: "festas",
-    timestamps: true,
+    modelName: 'Festa',
+    tableName: 'festas',
+    timestamps: true
   }
 );
 
 Festa.TIPOS_PACOTE_FESTA = TIPOS_PACOTE_FESTA;
 
-module.exports = Festa;
+export default Festa;

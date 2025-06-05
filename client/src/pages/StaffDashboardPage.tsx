@@ -1,5 +1,5 @@
-import { useAuth } from '@/contexts/authContextCore'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/contexts/authContextCore'
 
 const StaffDashboardPage = () => {
   const { user } = useAuth()

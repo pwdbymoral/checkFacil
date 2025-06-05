@@ -1,26 +1,26 @@
-require("dotenv").config();
+import 'dotenv/config';
 
-const express = require("express");
-const cors = require("cors");
-const sequelize = require("./config/database");
+import express from 'express';
+import cors from 'cors';
+import sequelize from './config/database.js';
 
-const Usuario = require("./models/Usuarios");
-const Festa = require("./models/Festa");
+import Usuario from './models/Usuarios.js';
+import Festa from './models/Festa.js';
 
-//ROTAS
-const authRoutes = require("./routes/authRoutes");
-const festaRoutes = require("./routes/festaRoutes");
+// ROTAS
+import authRoutes from './routes/authRoutes.js';
+import festaRoutes from './routes/festaRoutes.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 const dbModels = {
   Usuario,
-  Festa,
+  Festa
 };
 
 Object.values(dbModels).forEach((model) => {
-  if (model && typeof model.associate === "function") {
+  if (model && typeof model.associate === 'function') {
     model.associate(dbModels);
   }
 });
@@ -29,33 +29,26 @@ app.use(cors());
 app.use(express.json());
 
 // Rotas
-app.use("/auth", authRoutes);
-app.use("/festa", festaRoutes);
+app.use('/auth', authRoutes);
+app.use('/festa', festaRoutes);
 
 // Rota de teste
-app.get("/", (req, res) => {
-  res.send(
-    `API Rodando! Olá, mundo! Ambiente: ${
-      process.env.NODE_ENV || "desenvolvimento"
-    }`
-  );
+app.get('/', (req, res) => {
+  res.send(`API Rodando! Olá, mundo! Ambiente: ${process.env.NODE_ENV || 'desenvolvimento'}`);
 });
 
 async function LigarServidor() {
   try {
     await sequelize.authenticate(); // Testa a conexão com o banco
-    console.log("Conexão com o MySQL estabelecida com sucesso.");
+    // eslint-disable-next-line no-console
+    console.log('Conexão com o MySQL estabelecida com sucesso.');
 
     app.listen(port, () => {
-      console.log(
-        `Servidor rodando na porta ${port} em http://localhost:${port}`
-      );
+      // eslint-disable-next-line no-console
+      console.log(`Servidor rodando na porta ${port} em http://localhost:${port}`);
     });
   } catch (error) {
-    console.error(
-      "Não foi possível conectar ao banco de dados ou iniciar o servidor:",
-      error
-    );
+    console.error('Não foi possível conectar ao banco de dados ou iniciar o servidor:', error);
     process.exit(1);
   }
 }

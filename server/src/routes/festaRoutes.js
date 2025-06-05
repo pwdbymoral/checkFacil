@@ -1,10 +1,10 @@
-const express = require("express");
+import express from 'express';
+import * as authController from '../controllers/festaController.js';
+import { verificarTokenJWT } from '../middleware/validarReqAuth.js';
+
 const router = express.Router();
-const authController = require("../controllers/festaController");
-const { verificarTokenJWT } = require("../middleware/validarReqAuth");
 
-router.post("/criar-festa", verificarTokenJWT, authController.criarFesta);
+router.post('/criar-festa', verificarTokenJWT, authController.criarFesta);
+router.get('/listar-festas', verificarTokenJWT, authController.buscarFestas);
 
-router.get("/listar-festas", verificarTokenJWT, authController.buscarFestas);
-
-module.exports = router;
+export default router;

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import type { ReactNode } from 'react'
 
 import { AuthContext, type StaffUser, type AuthState } from './authContextCore'
+
+import type { ReactNode } from 'react'
 
 interface AuthProviderProps {
   children: ReactNode

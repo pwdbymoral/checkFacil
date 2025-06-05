@@ -1,0 +1,26 @@
+# Comentários
+*.md
+
+# Dependências e Cache
+node_modules/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state/
+
+# Lockfiles (Prettier geralmente não os formata, mas é bom listar)
+yarn.lock
+package-lock.json
+
+# Pastas de Build/Output
+dist/
+build/
+coverage/
+.turbo/
+
+# Arquivos gerados pelo Vite no client (se não cobertos por dist/)
+client/dist
+client/.vite
+
+# Arquivos minificados
+*.min.js
+*.min.css
