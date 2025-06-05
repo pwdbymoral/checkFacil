@@ -1757,27 +1757,6 @@ const RAW_RUNTIME_STATE =
           "typescript"\
         ],\
         "linkType": "HARD"\
-      }],\
-      ["virtual:ba97e1b7aa019739efb153f9d43d03c5eeb66654b3fdf48f22a533ac4ba12dcd9c4369ee0a310d45961e4c26364adbcaa89e4d916a983b249eecd41d331e8470#npm:6.21.0", {\
-        "packageLocation": "./.yarn/__virtual__/@typescript-eslint-typescript-estree-virtual-b70ad8dff5/3/.yarn/berry/cache/@typescript-eslint-typescript-estree-npm-6.21.0-04a199adba-10c0.zip/node_modules/@typescript-eslint/typescript-estree/",\
-        "packageDependencies": [\
-          ["@typescript-eslint/typescript-estree", "virtual:ba97e1b7aa019739efb153f9d43d03c5eeb66654b3fdf48f22a533ac4ba12dcd9c4369ee0a310d45961e4c26364adbcaa89e4d916a983b249eecd41d331e8470#npm:6.21.0"],\
-          ["@types/typescript", null],\
-          ["@typescript-eslint/types", "npm:6.21.0"],\
-          ["@typescript-eslint/visitor-keys", "npm:6.21.0"],\
-          ["debug", "virtual:1ff4b5f90832ba0a9c93ba1223af226e44ba70c1126a3740d93562b97bc36544e896a5e95908196f7458713e6a6089a34bfc67362fc6df7fa093bd06c878be47#npm:4.4.1"],\
-          ["globby", "npm:11.1.0"],\
-          ["is-glob", "npm:4.0.3"],\
-          ["minimatch", "npm:9.0.3"],\
-          ["semver", "npm:7.7.2"],\
-          ["ts-api-utils", "virtual:b70ad8dff5b0533b10eefbe42a295fd841536568d39f18e92abaab3e40d45af62b1d7e401b1d736b7db4b80a8c2d6e5ab72260e7116c77383b77eb2354d2bd52#npm:1.4.3"],\
-          ["typescript", null]\
-        ],\
-        "packagePeers": [\
-          "@types/typescript",\
-          "typescript"\
-        ],\
-        "linkType": "HARD"\
       }]\
     ]],\
     ["@typescript-eslint/utils", [\
@@ -1796,15 +1775,19 @@ const RAW_RUNTIME_STATE =
           ["@types/eslint", null],\
           ["@types/json-schema", "npm:7.0.15"],\
           ["@types/semver", "npm:7.7.0"],\
+          ["@types/typescript", null],\
           ["@typescript-eslint/scope-manager", "npm:6.21.0"],\
           ["@typescript-eslint/types", "npm:6.21.0"],\
-          ["@typescript-eslint/typescript-estree", "virtual:ba97e1b7aa019739efb153f9d43d03c5eeb66654b3fdf48f22a533ac4ba12dcd9c4369ee0a310d45961e4c26364adbcaa89e4d916a983b249eecd41d331e8470#npm:6.21.0"],\
+          ["@typescript-eslint/typescript-estree", "virtual:2e0a31ada442981c17889cfda5f06cd6894bc5cb00ab32b315a4a928599a3cc3a0f3a0554aa96d33cd1027d502dcb6e944e7e8e51646692aa5705160384979b2#npm:6.21.0"],\
           ["eslint", "npm:8.57.1"],\
-          ["semver", "npm:7.7.2"]\
+          ["semver", "npm:7.7.2"],\
+          ["typescript", "patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"]\
         ],\
         "packagePeers": [\
           "@types/eslint",\
-          "eslint"\
+          "@types/typescript",\
+          "eslint",\
+          "typescript"\
         ],\
         "linkType": "HARD"\
       }]\
@@ -7374,19 +7357,6 @@ const RAW_RUNTIME_STATE =
           ["ts-api-utils", "virtual:50394d3bd5440473049298ef5e30d5c5e14faa88e6840362e01f3b8356a7e2c333cbbefe55a74b0724f8c33fd9a136a6f305cf06233653d19f389ae8e8180b68#npm:1.4.3"],\
           ["@types/typescript", null],\
           ["typescript", "patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"]\
-        ],\
-        "packagePeers": [\
-          "@types/typescript",\
-          "typescript"\
-        ],\
-        "linkType": "HARD"\
-      }],\
-      ["virtual:b70ad8dff5b0533b10eefbe42a295fd841536568d39f18e92abaab3e40d45af62b1d7e401b1d736b7db4b80a8c2d6e5ab72260e7116c77383b77eb2354d2bd52#npm:1.4.3", {\
-        "packageLocation": "./.yarn/__virtual__/ts-api-utils-virtual-8dd800859c/3/.yarn/berry/cache/ts-api-utils-npm-1.4.3-ee6b12ae73-10c0.zip/node_modules/ts-api-utils/",\
-        "packageDependencies": [\
-          ["ts-api-utils", "virtual:b70ad8dff5b0533b10eefbe42a295fd841536568d39f18e92abaab3e40d45af62b1d7e401b1d736b7db4b80a8c2d6e5ab72260e7116c77383b77eb2354d2bd52#npm:1.4.3"],\
-          ["@types/typescript", null],\
-          ["typescript", null]\
         ],\
         "packagePeers": [\
           "@types/typescript",\
