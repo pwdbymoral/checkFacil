@@ -54,7 +54,7 @@ const StaffDashboardPage = () => {
   const navigate = useNavigate()
 
   const handleCreateNewEvent = () => {
-    navigate('/events/createEvent')
+    navigate('/staff/events/newEventDraft')
   }
 
   return (

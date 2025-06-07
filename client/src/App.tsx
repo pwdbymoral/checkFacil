@@ -7,6 +7,7 @@ import LoginPage from '@/pages/LoginPage'
 import StaffDashboardPage from '@/pages/StaffDashboardPage'
 import { ProtectedRoute } from '@/router/ProtectedRoute'
 
+import CreateDraftEventPage from './pages/events/CreateDraftEventPage'
 import CreateEventPage from './pages/events/CreateEventPage'
 import LandingPage from './pages/LandingPage'
 
@@ -71,8 +72,12 @@ function App() {
             element={<ProtectedRoute element={<StaffDashboardPage />} />}
           />
           <Route
-            path="events/createEvent"
+            path="staff/events/createEvent"
             element={<ProtectedRoute element={<CreateEventPage />} />}
+          />
+          <Route
+            path="/staff/events/newEventDraft"
+            element={<ProtectedRoute element={<CreateDraftEventPage />} />}
           />
         </Routes>
       </main>
