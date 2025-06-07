@@ -1,9 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import axios from 'axios'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { CalendarIcon, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import * as z from 'zod'
 
 import { Button } from '@/components/ui/button'
@@ -27,8 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useAuth } from '@/contexts/authContextCore'
 import { cn } from '@/lib/utils'
+import api from '@/services/api'
 
+// Define a schema for the form using zod
 const createDraftFormSchema = z.object({
   organizerName: z.string().min(1, 'Nome do contratante é obrigatório.'),
   organizerEmail: z
@@ -48,11 +54,16 @@ const createDraftFormSchema = z.object({
   contractedAdults: z.coerce.number().int().positive({ message: 'Deve ser um número positivo.' }),
 })
 
+// Define TypeScript types for form values
 type CreateDraftFormValues = z.infer<typeof createDraftFormSchema>
 
+// Component for creating a draft event
 function CreateDraftEventPage() {
   const [isLoading, setIsLoading] = useState(false)
+  useAuth()
+  const navigate = useNavigate()
 
+  // Initialize the form with react-hook-form and zod
   const form = useForm<CreateDraftFormValues>({
     resolver: zodResolver(createDraftFormSchema),
     defaultValues: {
@@ -68,17 +79,59 @@ function CreateDraftEventPage() {
     },
   })
 
+  // Function to handle form submission
   async function onSubmit(values: CreateDraftFormValues) {
-    // eslint-disable-next-line no-console
-    console.log('Dados do formulário de rascunho da festa:', values)
+    const contratantePayload = {
+      nome: values.organizerName,
+      email: values.organizerEmail,
+      senha: values.organizerPassword,
+      telefone: values.organizerPhone,
+    }
+    try {
+      // Log the payload being sent
+      console.info(
+        'Enviando dados do contratante para /auth/register/admFesta:',
+        contratantePayload,
+      )
+      const responseContratante = await api.post('/auth/register/admFesta', contratantePayload)
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    // TODO: Implementar a lógica de API aqui:
-    // 1. Chamar POST /auth/register/admFesta com os dados de 'organizer*'
-    // 2. Com o ID retornado, chamar POST /festa/criar-festa com os dados de 'party*'
-    // 3. Se sucesso, navegar para o dashboard: navigate('/staff/dashboard');
+      const novoContratante = responseContratante.data.usuario
+      if (!novoContratante || !novoContratante.id) {
+        throw new Error('Falha ao obter ID do contratante recém-criado.')
+      }
 
-    setIsLoading(false)
+      const festaPayload = {
+        // Map form fields to API fields
+        nome_festa: values.partyName,
+        data_festa: format(values.partyDate, 'yyyy-MM-dd'), // Format the date
+        pacote_escolhido: values.packageType,
+        numero_criancas_contratado: values.contractedChildren,
+        numero_adultos_contratado: values.contractedAdults,
+        id_organizador: novoContratante.id, // Use ID returned from first API call
+      }
+      console.info('Enviando dados da festa para /festa/criar-festa:', festaPayload)
+      await api.post('/festa/criar-festa', festaPayload)
+
+      // Success notification
+      toast.success('Agendamento iniciado com sucesso!', {
+        description: `O acesso foi enviado para ${values.organizerEmail}.`,
+      })
+      navigate('/staff/dashboard') // Redirect back to staff dashboard
+    } catch (error: unknown) {
+      let errorMessage = 'Ocorreu um erro inesperado. Tente novamente.'
+
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage = error.response.data.error || error.response.data.message || errorMessage
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+
+      toast.error('Falha ao criar agendamento', {
+        description: errorMessage,
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -93,7 +146,7 @@ function CreateDraftEventPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* Seção: Dados do Contratante */}
+              {/* Section: Organizer Details */}
               <div>
                 <h3 className="text-lg font-medium mb-4 border-b pb-2">Dados do Contratante</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -158,7 +211,7 @@ function CreateDraftEventPage() {
                 </div>
               </div>
 
-              {/* Seção: Dados Essenciais da Festa */}
+              {/* Section: Essential Party Details */}
               <div>
                 <h3 className="text-lg font-medium my-4 border-b pb-2">
                   Dados Essenciais da Festa
