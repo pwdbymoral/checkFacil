@@ -14,17 +14,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user: null,
     token: null,
   })
+  const [initialLoading, setInitialLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('staffUser')
-    const storedToken = localStorage.getItem('staffToken')
+    try {
+      const storedToken = localStorage.getItem('staffToken')
+      const storedUserJSON = localStorage.getItem('staffUser')
 
-    if (storedUser) {
-      setAuthState({
-        isAuthenticated: true,
-        user: JSON.parse(storedUser),
-        token: storedToken,
-      })
+      if (storedToken && storedUserJSON) {
+        const storedUser: StaffUser = JSON.parse(storedUserJSON)
+        setAuthState({
+          isAuthenticated: true,
+          user: storedUser,
+          token: storedToken,
+        })
+      }
+    } catch (error) {
+      console.error('AuthProvider: Erro ao restaurar sessão:', error)
+      localStorage.removeItem('staffUser')
+      localStorage.removeItem('staffToken')
+    } finally {
+      setInitialLoading(false)
     }
   }, [])
 
@@ -52,6 +62,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const value = {
     ...authState,
+    initialLoading,
     login,
     logout,
   }

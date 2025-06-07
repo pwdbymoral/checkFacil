@@ -13,6 +13,7 @@ export interface AuthState {
 }
 
 export interface AuthContextType extends AuthState {
+  initialLoading: boolean
   login: (userData: StaffUser, token?: string) => void
   logout: () => void
 }

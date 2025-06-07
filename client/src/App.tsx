@@ -1,26 +1,14 @@
 import './App.css'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 
+import SplashScreen from '@/components/SplashScreen'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/authContextCore'
 import LoginPage from '@/pages/LoginPage'
 import StaffDashboardPage from '@/pages/StaffDashboardPage'
 import { ProtectedRoute } from '@/router/ProtectedRoute'
 
-function HomePagePlaceholder() {
-  return (
-    <div>
-      <h1>Bem-vindo(a) ao Check Fácil!</h1>
-      <p>Esta é a página inicial (placeholder).</p>
-      <nav>
-        <p>Navegue para:</p>
-        <Button asChild>
-          <Link to="/login">Ir para Login do Staff</Link>
-        </Button>
-      </nav>
-    </div>
-  )
-}
+import LandingPage from './pages/LandingPage'
 
 function App() {
   const auth = useAuth()
@@ -29,6 +17,10 @@ function App() {
   const handleLogout = () => {
     auth.logout()
     navigate('/login')
+  }
+
+  if (auth.initialLoading) {
+    return <SplashScreen />
   }
   return (
     <div className="flex flex-col min-h-screen">
@@ -81,7 +73,7 @@ function App() {
 
       <main className="container mx-auto mt-6 mb-6 flex-grow">
         <Routes>
-          <Route path="/" element={<HomePagePlaceholder />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="/staff/dashboard"
