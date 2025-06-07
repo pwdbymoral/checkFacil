@@ -1,11 +1,10 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 
 const LandingPage = () => {
   return (
-    <div className="flex h-full flex-col items-center justify-center text-center p-4">
+    <div className="flex flex-grow flex-col items-center justify-center text-center p-4">
       <h1 className="text-5xl font-bold text-primary mb-4">Check Fácil</h1>
       <p className="text-lg text-muted-foreground mb-8 max-w-md">
         A forma moderna de gerenciar o acesso e a segurança do seu evento.
