@@ -1,0 +1,81 @@
+import { DataTypes, Model } from 'sequelize';
+import sequelize from '../config/database.js';
+
+
+const TIPOS_CONVIDADO = {
+  ADULTO_PAGANTE: 'ADULTO_PAGANTE',
+  CRIANCA_PAGANTE: 'CRIANCA_PAGANTE',
+  CRIANCA_ATE_1_ANO: 'CRIANCA_ATE_1_ANO',
+  BABA: 'BABA',
+  ANFITRIAO_FAMILIA_DIRETA: 'ANFITRIAO_FAMILIA_DIRETA',
+  ACOMPANHANTE_ATIPICO: 'ACOMPANHANTE_ATIPICO',
+};
+
+class ConvidadoFesta extends Model {
+  
+  static associate(models) {
+    // Um ConvidadoFesta pertence a uma Festa
+    this.belongsTo(models.Festa, {
+      foreignKey: 'id_festa',
+      as: 'festa', 
+    });
+  }
+}
+
+ConvidadoFesta.init(
+  {
+    
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    id_festa: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      
+    },
+    nome_convidado: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    idade_convidado: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    tipo_convidado: {
+      type: DataTypes.ENUM(...Object.values(TIPOS_CONVIDADO)), 
+      allowNull: false,
+    },
+    confirmou_presenca: {
+      type: DataTypes.ENUM('PENDENTE', 'SIM', 'NAO'),
+      allowNull: true,
+      defaultValue: 'PENDENTE',
+    },
+    checkin_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    checkout_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    observacao_convidado: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    
+  },
+  {
+    
+    sequelize,
+    modelName: 'ConvidadoFesta',
+    tableName: 'convidadosFesta', 
+    timestamps: true,
+  }
+);
+
+
+ConvidadoFesta.TIPOS_CONVIDADO = TIPOS_CONVIDADO;
+
+export default ConvidadoFesta;

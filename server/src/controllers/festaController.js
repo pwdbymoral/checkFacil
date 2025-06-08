@@ -1,4 +1,6 @@
 import models from '../models/index.js';
+import { Op } from 'sequelize';
+
 
 export async function criarFesta(req, res) {
   const {
@@ -66,8 +68,39 @@ export async function buscarFestas(req, res) {
   try {
     const idUsuarioLogado = req.usuarioId;
     const tipoUsuarioLogado = req.usuarioTipo;
+    const { data, data_inicio, data_fim } = req.query; 
 
-    let queryOptions = {
+    let whereClause = {}; 
+
+    // Adiciona o filtro de organizador para usuários que não são AdmEspaco
+    if (tipoUsuarioLogado !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO) {
+      whereClause.id_organizador = idUsuarioLogado;
+    }
+
+    
+    if (data) {
+      // Se uma data específica for fornecida
+      whereClause.data_festa = data;
+    } else if (data_inicio && data_fim) {
+      // Se um intervalo de datas for fornecido
+      whereClause.data_festa = {
+        [Op.between]: [data_inicio, data_fim],
+      };
+    } else if (data_inicio) {
+      // Se apenas a data de início for fornecida
+      whereClause.data_festa = {
+        [Op.gte]: data_inicio, //Maior ou igual a
+      };
+    } else if (data_fim) {
+      // Se apenas a data de fim for fornecida
+      whereClause.data_festa = {
+        [Op.lte]: data_fim, //Menor ou igual a
+      };
+    }
+    
+
+    const festas = await models.Festa.findAll({
+      where: whereClause, 
       include: [
         {
           model: models.Usuario,
@@ -75,28 +108,110 @@ export async function buscarFestas(req, res) {
           attributes: ['id', 'nome', 'email']
         }
       ],
-      order: [['data_festa', 'DESC']]
-    };
-
-    let festas;
-    let mensagemNenhumaFesta = 'Nenhuma festa encontrada.';
-
-    if (tipoUsuarioLogado === models.Usuario.TIPOS_USUARIO.ADM_ESPACO) {
-      festas = await models.Festa.findAll(queryOptions);
-      mensagemNenhumaFesta = 'Nenhuma festa cadastrada no espaço.';
-    } else {
-      queryOptions.where = { id_organizador: idUsuarioLogado };
-      festas = await models.Festa.findAll(queryOptions);
-      mensagemNenhumaFesta = 'Você ainda não tem festas cadastradas.';
-    }
+      order: [['data_festa', 'ASC']] 
+    });
 
     if (festas.length === 0) {
-      return res.status(200).json({ mensagem: mensagemNenhumaFesta, festas: [] });
+      return res.status(200).json({ mensagem: "Nenhuma festa encontrada com os filtros aplicados.", festas: [] });
     }
 
     return res.status(200).json(festas);
   } catch (error) {
     console.error('Erro ao listar festas:', error);
     return res.status(500).json({ error: 'Falha ao listar festas.' });
+  }
+}
+
+export async function atualizarFesta(req, res) {
+  try {
+    const { idFesta } = req.params;
+    const dadosAtualizados = req.body;
+    const { usuarioId, usuarioTipo } = req;
+
+    
+    const festa = await models.Festa.findByPk(idFesta);
+    if (!festa) {
+      return res.status(404).json({ error: 'Festa não encontrada com o ID fornecido.' });
+    }
+
+    
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO && festa.id_organizador !== usuarioId) {
+      return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para atualizar esta festa.' });
+    }
+
+    await festa.update(dadosAtualizados);
+
+    return res.status(200).json(festa);
+
+  } catch (error) {
+    console.error('Erro ao atualizar festa:', error);
+    if (error.name === 'SequelizeValidationError') {
+      const erros = error.errors.map((e) => e.message);
+      return res.status(400).json({ error: 'Dados inválidos para atualizar festa.', detalhes: erros });
+    }
+    return res.status(500).json({ error: 'Falha ao atualizar a festa.' });
+  }
+}
+
+export async function deletarFesta(req, res) {
+  try {
+    const { idFesta } = req.params;
+    const { usuarioId, usuarioTipo } = req;
+
+    const festa = await models.Festa.findByPk(idFesta);
+    if (!festa) {
+      return res.status(404).json({ error: 'Festa não encontrada com o ID fornecido.' });
+    }
+
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO && festa.id_organizador !== usuarioId) {
+      return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para deletar esta festa.' });
+    }
+
+    await festa.destroy();
+
+    return res.status(200).json({ mensagem: 'Festa deletada com sucesso.' });
+
+  } catch (error) {
+    console.error('Erro ao deletar festa:', error);
+    return res.status(500).json({ error: 'Falha ao deletar a festa.' });
+  }
+}
+
+export async function adicionarConvidado(req, res) {
+  try {
+    const { idFesta } = req.params; //  ID da festa da URL
+    const dadosConvidado = req.body; // dados do novo convidado 
+    const { usuarioId, usuarioTipo } = req; // Pega dados do utilizador logado
+
+    const festa = await models.Festa.findByPk(idFesta);
+    if (!festa) {
+      return res.status(404).json({ error: 'Festa não encontrada com o ID fornecido.' });
+    }
+
+    // Verifica a permissão para adicionar o convidado
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO && festa.id_organizador !== usuarioId) {
+      return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para adicionar convidados a esta festa.' });
+    }
+
+    // Validação básica dos dados do convidado
+    if (!dadosConvidado.nome_convidado || !dadosConvidado.tipo_convidado) {
+        return res.status(400).json({ error: "Nome e tipo do convidado são obrigatórios." });
+    }
+
+    // Cria o novo convidado, associando-o à festa
+    const novoConvidado = await models.ConvidadoFesta.create({
+      ...dadosConvidado, 
+      id_festa: idFesta,  
+    });
+
+    return res.status(201).json(novoConvidado);
+
+  } catch (error) {
+    console.error('Erro ao adicionar convidado:', error);
+    if (error.name === 'SequelizeValidationError') {
+      const erros = error.errors.map((e) => e.message);
+      return res.status(400).json({ error: 'Dados inválidos para o convidado.', detalhes: erros });
+    }
+    return res.status(500).json({ error: 'Falha ao adicionar convidado.' });
   }
 }

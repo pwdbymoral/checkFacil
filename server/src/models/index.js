@@ -1,12 +1,16 @@
+
 import sequelize from '../config/database.js';
 
 import Usuario from './Usuarios.js';
 import Festa from './Festa.js';
+import ConvidadoFesta from './ConvidadoFesta.js'; 
 
 const models = {
   Usuario,
-  Festa
+  Festa,
+  ConvidadoFesta, 
 };
+
 
 Object.values(models).forEach((model) => {
   if (model && typeof model.associate === 'function') {
