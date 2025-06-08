@@ -1,5 +1,4 @@
 import express from 'express';
-import * as authController from '../controllers/authController.js';
 import { verificarTokenJWT } from '../middleware/validarReqAuth.js';
 import * as festaController from '../controllers/festaController.js';
 const router = express.Router();
@@ -31,5 +30,12 @@ router.post(
   verificarTokenJWT,
   festaController.adicionarConvidado 
 );
+
+router.get(
+  '/:idFesta/convidados',
+  verificarTokenJWT, 
+  festaController.listarConvidadosDaFesta 
+);
+
 
 export default router;

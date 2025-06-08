@@ -215,3 +215,31 @@ export async function adicionarConvidado(req, res) {
     return res.status(500).json({ error: 'Falha ao adicionar convidado.' });
   }
 }
+
+export async function listarConvidadosDaFesta(req, res) {
+  try {
+    const { idFesta } = req.params; // ID da festa da URL
+    const { usuarioId, usuarioTipo } = req; // Pega dados do utilizador logado
+
+    const festa = await models.Festa.findByPk(idFesta);
+    if (!festa) {
+      return res.status(404).json({ error: 'Festa não encontrada com o ID fornecido.' });
+    }
+
+    
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO && festa.id_organizador !== usuarioId) {
+      return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para ver os convidados desta festa.' });
+    }
+
+    const convidados = await models.ConvidadoFesta.findAll({
+      where: { id_festa: idFesta },
+      order: [['nome_convidado', 'ASC']] 
+    });
+
+    return res.status(200).json(convidados);
+
+  } catch (error) {
+    console.error('Erro ao listar convidados:', error);
+    return res.status(500).json({ error: 'Falha ao listar convidados.' });
+  }
+}
