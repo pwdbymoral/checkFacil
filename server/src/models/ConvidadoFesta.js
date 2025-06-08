@@ -64,6 +64,15 @@ ConvidadoFesta.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    nome_responsavel:{
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    telefone_responsavel:{
+      type: DataTypes.STRING,
+      allowNull: true,
+    }
     
   },
   {

@@ -243,3 +243,111 @@ export async function listarConvidadosDaFesta(req, res) {
     return res.status(500).json({ error: 'Falha ao listar convidados.' });
   }
 }
+
+export async function buscarConvidadosPorNome(req, res) {
+  try {
+    const { idFesta } = req.params;
+    const { nome } = req.query;
+    const { usuarioId, usuarioTipo } = req; // Pega dados do utilizador logado
+
+    if (!nome) {
+      return res.status(400).json({ error: 'O parâmetro de busca "nome" é obrigatório.' });
+    }
+
+    const festa = await models.Festa.findByPk(idFesta);
+    if (!festa) {
+      return res.status(404).json({ error: 'Festa não encontrada.' });
+    }
+
+    // permissão
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO && festa.id_organizador !== usuarioId) {
+      return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para buscar convidados nesta festa.' });
+    }
+
+    const convidados = await models.ConvidadoFesta.findAll({
+      where: {
+        id_festa: idFesta,
+        nome_convidado: {
+          
+          [Op.like]: `%${nome}%`
+        }
+      },
+      order: [['nome_convidado', 'ASC']]
+    });
+
+    if (convidados.length === 0) {
+      return res.status(200).json({ mensagem: "Nenhum convidado encontrado com o nome fornecido.", convidados: [] });
+    }
+
+    return res.status(200).json(convidados);
+
+  } catch (error) {
+    console.error('Erro ao buscar convidados por nome:', error);
+    return res.status(500).json({ error: 'Falha ao buscar convidados.' });
+  }
+}
+
+export async function atualizarConvidado(req, res) {
+  try {
+    const { idFesta, idConvidado } = req.params;
+    const dadosAtualizados = req.body;
+    const { usuarioId, usuarioTipo } = req;
+
+    const festa = await models.Festa.findByPk(idFesta);
+    if (!festa) {
+      return res.status(404).json({ error: 'Festa não encontrada com o ID fornecido.' });
+    }
+
+    
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO && festa.id_organizador !== usuarioId) {
+      return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para atualizar convidados nesta festa.' });
+    }
+
+    const convidado = await models.ConvidadoFesta.findOne({ where: { id: idConvidado, id_festa: idFesta }});
+    if (!convidado) {
+      return res.status(404).json({ error: 'Convidado não encontrado nesta festa com o ID fornecido.' });
+    }
+
+    await convidado.update(dadosAtualizados);
+
+    return res.status(200).json(convidado);
+
+  } catch (error) {
+    console.error('Erro ao atualizar convidado:', error);
+    if (error.name === 'SequelizeValidationError') {
+      const erros = error.errors.map((e) => e.message);
+      return res.status(400).json({ error: 'Dados inválidos para atualizar o convidado.', detalhes: erros });
+    }
+    return res.status(500).json({ error: 'Falha ao atualizar o convidado.' });
+  }
+}
+
+export async function deletarConvidado(req, res) {
+  try {
+    const { idFesta, idConvidado } = req.params;
+    const { usuarioId, usuarioTipo } = req;
+
+    const festa = await models.Festa.findByPk(idFesta);
+    if (!festa) {
+      return res.status(404).json({ error: 'Festa não encontrada com o ID fornecido.' });
+    }
+
+   
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO && festa.id_organizador !== usuarioId) {
+      return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para deletar convidados desta festa.' });
+    }
+
+    const convidado = await models.ConvidadoFesta.findOne({ where: { id: idConvidado, id_festa: idFesta }});
+    if (!convidado) {
+      return res.status(404).json({ error: 'Convidado não encontrado nesta festa com o ID fornecido.' });
+    }
+
+    await convidado.destroy();
+
+    return res.status(200).json({ mensagem: 'Convidado deletado com sucesso.' });
+
+  } catch (error) {
+    console.error('Erro ao deletar convidado:', error);
+    return res.status(500).json({ error: 'Falha ao deletar o convidado.' });
+  }
+}
