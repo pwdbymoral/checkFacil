@@ -364,6 +364,7 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./server/",\
         "packageDependencies": [\
           ["@checkfacil/server", "workspace:server"],\
+          ["axios", "npm:1.9.0"],\
           ["bcryptjs", "npm:3.0.2"],\
           ["cors", "npm:2.8.5"],\
           ["dotenv", "npm:16.5.0"],\

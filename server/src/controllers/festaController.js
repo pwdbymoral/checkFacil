@@ -1,66 +1,81 @@
 import models from '../models/index.js';
 import { Op } from 'sequelize';
-
+import { randomBytes } from 'crypto';
+import axios from 'axios';
 
 export async function criarFesta(req, res) {
-  const {
-    nome_festa,
-    data_festa,
-    horario_inicio,
-    horario_fim,
-    local_festa,
-    descricao,
-    pacote_escolhido,
-    numero_adultos_contratado,
-    numero_criancas_contratado,
-    nome_aniversariante,
-    idade_aniversariante,
-    tema_festa,
-    festa_deixa_e_pegue,
-    autoriza_uso_imagem,
-    instagram_cliente,
-    procedimento_convidado_fora_lista,
-    link_playlist_spotify,
-    observacoes_festa,
-    id_organizador
-  } = req.body;
+  const { dadosFesta, dadosCliente } = req.body;
+  const idAdmEspacoLogado = req.usuarioId;
+
+  if (!dadosFesta || !dadosCliente || !dadosCliente.email || !dadosFesta.nome_festa) {
+    return res.status(400).json({ error: 'Dados da festa e do cliente (com nome e email) são obrigatórios.' });
+  }
 
   try {
-    const festa = await models.Festa.create({
-      nome_festa,
-      data_festa,
-      horario_inicio: horario_inicio || null,
-      horario_fim: horario_fim || null,
-      local_festa: local_festa || null,
-      descricao: descricao || null,
-      pacote_escolhido: pacote_escolhido || null,
-      numero_adultos_contratado: numero_adultos_contratado || null,
-      numero_criancas_contratado: numero_criancas_contratado || null,
-      nome_aniversariante: nome_aniversariante || null,
-      idade_aniversariante: idade_aniversariante || null,
-      tema_festa: tema_festa || null,
-      festa_deixa_e_pegue: festa_deixa_e_pegue === undefined ? null : Boolean(festa_deixa_e_pegue),
-      autoriza_uso_imagem: autoriza_uso_imagem === undefined ? null : Boolean(autoriza_uso_imagem),
-      instagram_cliente: instagram_cliente || null,
-      procedimento_convidado_fora_lista: procedimento_convidado_fora_lista || null,
-      link_playlist_spotify: link_playlist_spotify || null,
-      observacoes_festa: observacoes_festa || null,
-      id_organizador
+    let clienteOrganizador = await models.Usuario.findOne({ where: { email: dadosCliente.email } });
+    let isNovoCliente = false;
+
+    if (!clienteOrganizador) {
+      isNovoCliente = true;
+      clienteOrganizador = await models.Usuario.create({
+        nome: dadosCliente.nome,
+        email: dadosCliente.email,
+        telefone: dadosCliente.telefone,
+        tipoUsuario: models.Usuario.TIPOS_USUARIO.ADM_FESTA,
+        senha: randomBytes(16).toString('hex'),
+      });
+
+      
+      const webhookUrl = 'https://webhook.4growthbr.space/webhook/36f73d12-de61-4c8d-8ac4-761be5f42d31';
+      try {
+        
+        const payloadWebhook = {
+          nomeCliente: clienteOrganizador.nome,
+          emailCliente: clienteOrganizador.email,
+          telefoneCliente: clienteOrganizador.telefone,
+          
+          linkDefinirSenha: `https://checkfacil.com/definir-senha?token=TOKEN_DE_USO_UNICO`
+        };
+
+        console.log('Enviando dados para o webhook n8n:', payloadWebhook);
+        
+        axios.post(webhookUrl, payloadWebhook).catch(webhookError => {
+            
+            console.error('Erro secundário ao enviar o webhook para n8n:', webhookError.message);
+        });
+        
+      } catch (webhookError) {
+        
+        console.error('Erro ao tentar disparar o webhook para n8n:', webhookError.message);
+      }
+      
+
+    } else {
+      console.log(`Cliente já existente encontrado: ${clienteOrganizador.email}`);
+     
+    }
+
+    const novaFesta = await models.Festa.create({
+      ...dadosFesta,
+      id_organizador: clienteOrganizador.id,
     });
 
-    return res.status(201).json(festa);
+    const festaCompleta = await models.Festa.findByPk(novaFesta.id, {
+        include: [{ model: models.Usuario, as: 'organizador', attributes: ['id', 'nome', 'email', 'telefone'] }]
+    });
+
+    return res.status(201).json({
+        festa: festaCompleta,
+        isNovoCliente: isNovoCliente,
+        mensagem: isNovoCliente ? "Cliente e festa criados com sucesso. Mensagem de boas-vindas a ser enviada." : "Festa criada e associada a um cliente existente com sucesso."
+    });
+
   } catch (error) {
-    console.error('Erro ao criar festa:', error);
+    console.error('Erro no fluxo de criar festa:', error);
     if (error.name === 'SequelizeValidationError') {
-      const erros = error.errors.map((e) => e.message);
-      return res.status(400).json({ error: 'Dados inválidos para criar festa.', detalhes: erros });
+      return res.status(400).json({ error: 'Dados inválidos.', detalhes: error.errors.map(e => e.message) });
     }
-    if (error.name === 'SequelizeForeignKeyConstraintError') {
-      return res.status(400).json({
-        error: 'Erro de chave estrangeira: Verifique se o id_organizador é válido.'
-      });
-    }
-    return res.status(500).json({ error: 'Falha ao criar festa.' });
+    return res.status(500).json({ error: 'Falha ao processar a criação da festa.' });
   }
 }
 
