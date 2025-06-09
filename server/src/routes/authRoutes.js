@@ -13,4 +13,6 @@ router.post('/register/admEspaco', validarRegistro, authController.registrarAdmE
 
 router.post('/login', validarLogin, authController.login);
 
+router.post('/definir-senha', authController.definirSenha);
+
 export default router;

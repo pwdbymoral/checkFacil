@@ -63,7 +63,15 @@ Usuario.init(
       ),
       allowNull: false,
       defaultValue: TIPOS_USUARIO.CONVIDADO
-    }
+    },
+     redefineSenhaToken: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    redefineSenhaExpiracao: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     sequelize,

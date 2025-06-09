@@ -4,62 +4,86 @@ import { randomBytes } from 'crypto';
 import axios from 'axios';
 
 export async function criarFesta(req, res) {
+  // Pega os "pacotes" de dados do corpo da requisição
   const { dadosFesta, dadosCliente } = req.body;
-  const idAdmEspacoLogado = req.usuarioId;
+  // Pega o ID do utilizador logado (o AdmEspaco que está a fazer a operação)
+  const idAdmEspacoLogado = req.usuarioId; 
 
+  // Validação básica para garantir que os dados mínimos foram enviados
   if (!dadosFesta || !dadosCliente || !dadosCliente.email || !dadosFesta.nome_festa) {
     return res.status(400).json({ error: 'Dados da festa e do cliente (com nome e email) são obrigatórios.' });
   }
 
   try {
+    // Procura na base de dados se já existe um utilizador com o email do cliente
     let clienteOrganizador = await models.Usuario.findOne({ where: { email: dadosCliente.email } });
-    let isNovoCliente = false;
+    let isNovoCliente = false; // Variável para sabermos se o cliente foi criado agora
 
+    // Se não encontrou nenhum utilizador com aquele email...
     if (!clienteOrganizador) {
       isNovoCliente = true;
+
+      // ...então cria um novo utilizador para o cliente
       clienteOrganizador = await models.Usuario.create({
         nome: dadosCliente.nome,
         email: dadosCliente.email,
         telefone: dadosCliente.telefone,
         tipoUsuario: models.Usuario.TIPOS_USUARIO.ADM_FESTA,
+        // Gera uma senha inicial aleatória e forte que será descartada.
+        // O cliente vai definir a sua própria senha através do link que vamos enviar.
         senha: randomBytes(16).toString('hex'),
       });
 
+      // ---- GERAÇÃO E ARMAZENAMENTO DO TOKEN PARA DEFINIR SENHA ----
+      // 1. Gera uma string aleatória de 20 bytes e converte para hexadecimal (um token de 40 caracteres)
+      const tokenDefinicaoSenha = randomBytes(20).toString('hex');
       
-      const webhookUrl = 'https://webhook.4growthbr.space/webhook/36f73d12-de61-4c8d-8ac4-761be5f42d31';
+      // 2. Define um tempo de expiração para este token (ex: 24 horas a partir de agora)
+      const expiracao = new Date();
+      expiracao.setHours(expiracao.getHours() + 24); // Token válido por 24h
+
+      // 3. Atribui o token e a data de expiração ao utilizador que acabámos de criar
+      clienteOrganizador.redefineSenhaToken = tokenDefinicaoSenha;
+      clienteOrganizador.redefineSenhaExpiracao = expiracao;
+
+      // 4. Salva estas novas informações (o token e a expiração) na base de dados
+      await clienteOrganizador.save();
+      // ---- FIM DA GERAÇÃO DO TOKEN ----
+
+      // ---- LÓGICA DO WEBHOOK ----
+      const webhookUrl = 'https://workflows.4growthbr.space/webhook/36f73d12-de61-4c8d-8ac4-761be5f42d31'; // USA O URL DE PRODUÇÃO
       try {
-        
+        // Agora o payload envia o token real para o n8n
         const payloadWebhook = {
           nomeCliente: clienteOrganizador.nome,
           emailCliente: clienteOrganizador.email,
           telefoneCliente: clienteOrganizador.telefone,
-          
-          linkDefinirSenha: `https://checkfacil.com/definir-senha?token=TOKEN_DE_USO_UNICO`
+          // O n8n vai usar este token para construir o link de acesso
+          token: tokenDefinicaoSenha, 
         };
 
         console.log('Enviando dados para o webhook n8n:', payloadWebhook);
-        
+        // Faz a chamada POST para o n8n.
         axios.post(webhookUrl, payloadWebhook).catch(webhookError => {
-            
-            console.error('Erro secundário ao enviar o webhook para n8n:', webhookError.message);
+            console.error('Erro secundário ao enviar o webhook para n8n:', webhookError.response ? webhookError.response.data : webhookError.message);
         });
         
       } catch (webhookError) {
-        
         console.error('Erro ao tentar disparar o webhook para n8n:', webhookError.message);
       }
-      
+      // ---- FIM DA LÓGICA DO WEBHOOK ----
 
     } else {
       console.log(`Cliente já existente encontrado: ${clienteOrganizador.email}`);
-     
     }
 
+    // Cria a festa e associa-a ao cliente (seja ele novo ou antigo)
     const novaFesta = await models.Festa.create({
-      ...dadosFesta,
-      id_organizador: clienteOrganizador.id,
+      ...dadosFesta, // Todos os dados do rascunho da festa
+      id_organizador: clienteOrganizador.id, // Associa a festa ao ID do cliente
     });
 
+    // Busca a festa recém-criada incluindo os dados do organizador para dar uma resposta completa
     const festaCompleta = await models.Festa.findByPk(novaFesta.id, {
         include: [{ model: models.Usuario, as: 'organizador', attributes: ['id', 'nome', 'email', 'telefone'] }]
     });
@@ -78,7 +102,6 @@ export async function criarFesta(req, res) {
     return res.status(500).json({ error: 'Falha ao processar a criação da festa.' });
   }
 }
-
 export async function buscarFestas(req, res) {
   try {
     const idUsuarioLogado = req.usuarioId;
