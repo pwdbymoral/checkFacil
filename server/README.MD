@@ -76,26 +76,17 @@ A API estará disponível em: [http://localhost:3001](http://localhost:3001)
 
 ---
 
-## 🔑 Autenticação
+## 🔐 Endpoints de Autenticação (`/auth`)
 
-Todas as rotas protegidas exigem o token JWT:
+> Todas as rotas relacionadas ao login e cadastro de usuários (admin e convidados).
 
-```http
-Authorization: Bearer SEU_TOKEN_JWT_AQUI
-```
-
----
-
-## 📚 Endpoints da API
-
-### 🛡️ Auth (`/auth`)
-
-| Método | Rota                          | Descrição                                       |
-|--------|-------------------------------|-------------------------------------------------|
-| POST   | `/auth/register/admEspaco`    | Registra um novo administrador do espaço        |
-| POST   | `/auth/register/admFesta`     | Registra um novo administrador da festa         |
-| POST   | `/auth/login`                 | Login e retorno do token JWT                    |
-| POST   | `/auth/definir-senha`         | Definição de senha com token enviado por email  |
+| Método | Rota                          | Descrição                                                |
+|--------|-------------------------------|----------------------------------------------------------|
+| POST   | `/auth/register/convidado`    | Registra um novo convidado no sistema                    |
+| POST   | `/auth/register/admEspaco`    | Registra um novo administrador do espaço                 |
+| POST   | `/auth/register/admFesta`     | Registra um novo administrador de festa                  |
+| POST   | `/auth/login`                 | Realiza login e retorna token JWT                        |
+| POST   | `/auth/definir-senha`         | Permite definição de senha via token de primeiro acesso  |
 
 #### 🔸 Exemplo: Login
 
@@ -117,55 +108,35 @@ Authorization: Bearer SEU_TOKEN_JWT_AQUI
 
 ---
 
-### 🎉 Festas (`/festa`)
+## 🎉 Endpoints de Festas (`/festa`)
 
-🔐 Requer autenticação
+🔐 Requer autenticação via token JWT.
 
 | Método | Rota               | Descrição                                      |
 |--------|--------------------|-----------------------------------------------|
-| POST   | `/festa/criar`     | Cria uma nova festa associada a um cliente    |
-| GET    | `/festa/listar`    | Lista festas (todas ou do próprio usuário)    |
-| PATCH  | `/festa/:idFesta`  | Atualiza dados de uma festa                   |
-| DELETE | `/festa/:idFesta`  | Remove uma festa                              |
+| POST   | `/festa/criar`     | Cria uma nova festa e associa um cliente      |
+| GET    | `/festa/listar`    | Lista festas com filtros e permissões         |
+| PATCH  | `/festa/:idFesta`  | Atualiza uma festa específica                 |
+| DELETE | `/festa/:idFesta`  | Remove uma festa do sistema                   |
 
-#### 🔸 Exemplo: Criar Festa
+### 🔍 Filtros disponíveis em `/festa/listar`
 
-```json
-{
-  "dadosFesta": {
-    "nome_festa": "Festa Incrível",
-    "data_festa": "2025-12-25",
-    "pacote_escolhido": "SUPER_FESTA_COMPLETA"
-  },
-  "dadosCliente": {
-    "nome": "Cliente Feliz",
-    "email": "cliente.feliz@exemplo.com",
-    "telefone": "79988887777"
-  }
-}
-```
-
-#### 🔍 Filtros Disponíveis:
-
-```http
-GET /festa/listar
-GET /festa/listar?data=2025-12-25
-GET /festa/listar?data_inicio=2025-12-01&data_fim=2025-12-31
-```
+- `?data=2025-12-25` → por data exata  
+- `?data_inicio=2025-12-01&data_fim=2025-12-31` → por intervalo de datas  
 
 ---
 
-### 🧑‍🤝‍🧑 Convidados (`/festa/:idFesta/convidados`)
+## 🧑‍🤝‍🧑 Endpoints de Convidados (`/festa/:idFesta/convidados`)
 
-🔐 Requer autenticação
+> Gerenciamento de convidados vinculados a uma festa. Requer autenticação JWT.
 
-| Método | Rota                                                          | Descrição                          |
-|--------|---------------------------------------------------------------|------------------------------------|
-| POST   | `/festa/:idFesta/convidados`                                  | Adiciona novo convidado            |
-| GET    | `/festa/:idFesta/convidados`                                  | Lista todos os convidados          |
-| GET    | `/festa/:idFesta/convidados/buscar?nome=Silva`                | Busca convidados por nome          |
-| PATCH  | `/festa/:idFesta/convidados/:idConvidado`                     | Atualiza dados de um convidado     |
-| DELETE | `/festa/:idFesta/convidados/:idConvidado`                     | Remove um convidado                |
+| Método | Rota                                                                 | Descrição                            |
+|--------|----------------------------------------------------------------------|--------------------------------------|
+| POST   | `/festa/:idFesta/convidados`                                         | Adiciona um novo convidado à festa   |
+| GET    | `/festa/:idFesta/convidados`                                         | Lista todos os convidados da festa   |
+| GET    | `/festa/:idFesta/convidados/buscar?nome=João`                        | Busca convidados pelo nome           |
+| PATCH  | `/festa/:idFesta/convidados/:idConvidado`                            | Atualiza um convidado específico     |
+| DELETE | `/festa/:idFesta/convidados/:idConvidado`                            | Remove um convidado específico       |
 
 #### 🔸 Exemplo: Adicionar Convidado
 
@@ -181,7 +152,10 @@ GET /festa/listar?data_inicio=2025-12-01&data_fim=2025-12-31
 
 ---
 
-## 📌 Observações Finais
+## ✅ Observações Técnicas
 
-- Em produção, proteja os endpoints `/auth/register/*`
-- Integre com **n8n**, WhatsApp ou CRM conforme necessário
+- **Todas as rotas de `/festa` e `/festa/:idFesta/convidados` são protegidas com JWT**.
+- **Middlewares** utilizados:
+  - `verificarTokenJWT`: para rotas protegidas
+  - `validarRegistro`, `validarLogin`: validação de corpo de requisição em cadastros/login
+- Os registros de administrador (`admEspaco`, `admFesta`) devem ser protegidos em produção.
