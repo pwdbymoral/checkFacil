@@ -84,4 +84,17 @@ router.delete(
   festaController.deletarConvidado
 );
 
+router.patch(
+  '/:idFesta/convidados/:idConvidado/checkin',
+  verificarTokenJWT,
+  festaController.checkinConvidado
+);
+
+
+router.patch(
+  '/:idFesta/convidados/:idConvidado/checkout',
+  verificarTokenJWT,
+  festaController.checkoutConvidado
+);
+
 export default router;

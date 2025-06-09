@@ -137,6 +137,8 @@ A API estará disponível em: [http://localhost:3001](http://localhost:3001)
 | GET    | `/festa/:idFesta/convidados/buscar?nome=João`                        | Busca convidados pelo nome           |
 | PATCH  | `/festa/:idFesta/convidados/:idConvidado`                            | Atualiza um convidado específico     |
 | DELETE | `/festa/:idFesta/convidados/:idConvidado`                            | Remove um convidado específico       |
+| PATCH  | `/festa/:idFesta/convidados/:idConvidado/checkin`                    | Realiza o check-in de um convidado (Staff/Admin)  |
+| PATCH  | `/festa/:idFesta/convidados/:idConvidado/checkout`                   | Realiza o check-out de um convidado (Staff/Admin) |
 
 #### 🔸 Exemplo: Adicionar Convidado
 
@@ -147,6 +149,46 @@ A API estará disponível em: [http://localhost:3001](http://localhost:3001)
   "idade_convidado": 30,
   "nome_responsavel": null,
   "telefone_responsavel": null
+}
+```
+
+#### 🔸 Exemplo: Check-in
+
+```json
+// Requisição
+PATCH /festa/15/convidados/7/checkin
+
+// Corpo: vazio ou {}
+{}
+
+// Resposta de sucesso
+{
+  "mensagem": "Check-in realizado com sucesso!",
+  "convidado": {
+    "id": 7,
+    "nome_convidado": "João da Silva",
+    "checkin": "2025-06-08T18:30:00.000Z"
+  }
+}
+```
+
+#### 🔸 Exemplo: Check-out
+
+```json
+// Requisição
+PATCH /festa/15/convidados/7/checkout
+
+// Corpo: vazio ou {}
+{}
+
+// Resposta de sucesso
+{
+  "mensagem": "Check-out realizado com sucesso!",
+  "convidado": {
+    "id": 7,
+    "nome_convidado": "João da Silva",
+    "checkout": "2025-06-08T20:00:00.000Z"
+  }
 }
 ```
 
