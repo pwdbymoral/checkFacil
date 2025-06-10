@@ -8,6 +8,7 @@ import CreateDraftEventPage from '@/pages/events/CreateDraftEventPage'
 import CreateEventPage from '@/pages/events/CreateEventPage'
 import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/LoginPage'
+import { SetPasswordPage } from '@/pages/SetPasswordPage'
 import StaffDashboardPage from '@/pages/StaffDashboardPage'
 import { ProtectedRoute } from '@/router/ProtectedRoute'
 
@@ -78,6 +79,10 @@ function App() {
           <Route
             path="/staff/events/newEventDraft"
             element={<ProtectedRoute element={<CreateDraftEventPage />} />}
+          />
+          <Route
+            path="/organizer/choosePassword"
+            element={<ProtectedRoute element={<SetPasswordPage />} />}
           />
         </Routes>
       </main>
