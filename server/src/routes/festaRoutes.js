@@ -1,6 +1,4 @@
 import express from 'express';
-
-
 import * as festaController from '../controllers/festaController.js';
 import { verificarTokenJWT } from '../middleware/validarReqAuth.js';
 
@@ -9,23 +7,31 @@ const router = express.Router();
 
 // Todas as rotas estão protegidas e requerem autenticação via token JWT.
 
-// Cria uma nova festa
+
+// Cria uma nova festa.
 router.post(
-  '/criar', 
+  '/criar',
   verificarTokenJWT,
   festaController.criarFesta
 );
 
-
-// Busca/lista festas com base nas permissões e filtros de data
+// Buscar Festa por ID.
 router.get(
-  '/listar', 
+    '/:idFesta',
+    verificarTokenJWT,
+    festaController.buscarFestaPorId
+);
+
+
+//  Busca/lista festas com base nas permissões e filtros de data.
+router.get(
+  '/listar',
   verificarTokenJWT,
   festaController.buscarFestas
 );
 
 
-// Atualiza uma festa específica
+// Atualiza uma festa específica.
 router.patch(
   '/:idFesta',
   verificarTokenJWT,
@@ -33,7 +39,7 @@ router.patch(
 );
 
 
-// Deleta uma festa específica
+// Deleta uma festa específica.
 router.delete(
   '/:idFesta',
   verificarTokenJWT,
@@ -41,9 +47,7 @@ router.delete(
 );
 
 
-
-
-// Adiciona um novo convidado a uma festa
+// Adiciona um novo convidado a uma festa.
 router.post(
   '/:idFesta/convidados',
   verificarTokenJWT,
@@ -51,7 +55,7 @@ router.post(
 );
 
 
-// Lista todos os convidados de uma festa
+// Lista todos os convidados de uma festa.
 router.get(
   '/:idFesta/convidados',
   verificarTokenJWT,
@@ -59,9 +63,7 @@ router.get(
 );
 
 
-
-
-// Busca convidados por nome dentro de uma festa específica (ex: ?nome=Pedro)
+// Busca convidados por nome dentro de uma festa (ex: ?nome=Pedro).
 router.get(
   '/:idFesta/convidados/buscar',
   verificarTokenJWT,
@@ -69,7 +71,7 @@ router.get(
 );
 
 
-//Atualiza um convidado específico
+//  Atualiza um convidado específico.
 router.patch(
   '/:idFesta/convidados/:idConvidado',
   verificarTokenJWT,
@@ -77,13 +79,15 @@ router.patch(
 );
 
 
-// Deleta um convidado específico
+// Deleta um convidado específico.
 router.delete(
   '/:idFesta/convidados/:idConvidado',
   verificarTokenJWT,
   festaController.deletarConvidado
 );
 
+
+//Realiza o check-in de um convidado.
 router.patch(
   '/:idFesta/convidados/:idConvidado/checkin',
   verificarTokenJWT,
@@ -91,10 +95,18 @@ router.patch(
 );
 
 
+// Realiza o check-out de um convidado.
 router.patch(
   '/:idFesta/convidados/:idConvidado/checkout',
   verificarTokenJWT,
   festaController.checkoutConvidado
+);
+
+// Busca um convidado específico por ID dentro de uma festa.
+router.get(
+  '/:idFesta/convidados/:idConvidado',
+  verificarTokenJWT, 
+  festaController.buscarConvidadoPorId 
 );
 
 export default router;

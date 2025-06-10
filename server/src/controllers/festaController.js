@@ -462,3 +462,80 @@ export async function checkoutConvidado(req, res) {
     return res.status(500).json({ error: 'Falha ao realizar check-out.' });
   }
 }
+
+export async function buscarConvidadoPorId(req, res) {
+  try {
+    const { idFesta, idConvidado } = req.params;
+    const { usuarioId, usuarioTipo } = req;
+
+    
+    const festa = await models.Festa.findByPk(idFesta);
+    if (!festa) {
+      return res.status(404).json({ error: 'Festa não encontrada com o ID fornecido.' });
+    }
+
+    
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO && festa.id_organizador !== usuarioId) {
+      return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para visualizar os convidados desta festa.' });
+    }
+
+    
+    const convidado = await models.ConvidadoFesta.findOne({
+      where: {
+        id: idConvidado,
+        id_festa: idFesta, 
+      },
+    });
+
+    if (!convidado) {
+      return res.status(404).json({ error: 'Convidado não encontrado nesta festa com o ID fornecido.' });
+    }
+
+    
+    return res.status(200).json(convidado);
+
+  } catch (error) {
+    console.error('Erro ao buscar convidado por ID:', error);
+    return res.status(500).json({ error: 'Falha ao buscar convidado.' });
+  }
+}
+
+export async function buscarFestaPorId(req, res) {
+  try {
+    const { idFesta } = req.params; 
+    const { usuarioId, usuarioTipo } = req; 
+
+    
+    const festa = await models.Festa.findByPk(idFesta, {
+      include: [
+        {
+          model: models.Usuario,
+          as: 'organizador', 
+          attributes: ['id', 'nome', 'email', 'telefone'],
+        },
+        {
+          model: models.ConvidadoFesta,
+          as: 'convidados', 
+        },
+      ],
+    });
+
+    if (!festa) {
+      return res.status(404).json({ error: 'Festa não encontrada com o ID fornecido.' });
+    }
+
+    
+    // Se o utilizador logado NÃO é um AdmEspaco E NÃO é o organizador da festa...
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO && festa.id_organizador !== usuarioId) {
+      
+      return res.status(403).json({ error: 'Acesso negado. Você não tem permissão para visualizar esta festa.' });
+    }
+
+   
+    return res.status(200).json(festa);
+
+  } catch (error) {
+    console.error('Erro ao buscar festa por ID:', error);
+    return res.status(500).json({ error: 'Falha ao buscar a festa.' });
+  }
+}

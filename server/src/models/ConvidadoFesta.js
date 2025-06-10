@@ -72,7 +72,24 @@ ConvidadoFesta.init(
     telefone_responsavel:{
       type: DataTypes.STRING,
       allowNull: true,
-    }
+    },
+    data_nascimento: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+     e_crianca_atipica: { 
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false,
+    },
+    telefone_convidado: { 
+      type: DataTypes.STRING(25),
+      allowNull: true,
+    },
+    telefone_acompanhante: { 
+      type: DataTypes.STRING(25),
+      allowNull: true,
+    },
     
   },
   {
