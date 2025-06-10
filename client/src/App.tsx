@@ -2,12 +2,14 @@ import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 
 import SplashScreen from '@/components/SplashScreen'
 import { Button } from '@/components/ui/button'
+import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/contexts/authContextCore'
+import CreateDraftEventPage from '@/pages/events/CreateDraftEventPage'
+import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/LoginPage'
+import { SetPasswordPage } from '@/pages/SetPasswordPage'
 import StaffDashboardPage from '@/pages/StaffDashboardPage'
 import { ProtectedRoute } from '@/router/ProtectedRoute'
-
-import LandingPage from './pages/LandingPage'
 
 function App() {
   const auth = useAuth()
@@ -67,13 +69,26 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="/staff/dashboard"
-            element={<ProtectedRoute element={<StaffDashboardPage />} />}
+            element={
+              <ProtectedRoute element={<StaffDashboardPage />} allowedRoles={['Adm_espaco']} />
+            }
+          />
+          <Route
+            path="/staff/events/newEventDraft"
+            element={
+              <ProtectedRoute element={<CreateDraftEventPage />} allowedRoles={['Adm_espaco']} />
+            }
+          />
+          <Route
+            path="/organizer/choosePassword"
+            element={<ProtectedRoute element={<SetPasswordPage />} allowedRoles={['Adm_festa']} />}
           />
         </Routes>
       </main>
       <footer className="p-4 bg-muted text-muted-foreground text-center text-sm">
         <p>&copy; {new Date().getFullYear()} Check Fácil. Todos os direitos reservados.</p>
       </footer>
+      <Toaster richColors position="top-right" />
     </div>
   )
 }
