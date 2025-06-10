@@ -64,14 +64,14 @@ Usuario.init(
       allowNull: false,
       defaultValue: TIPOS_USUARIO.CONVIDADO
     },
-     redefineSenhaToken: {
+    redefineSenhaToken: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
     redefineSenhaExpiracao: {
       type: DataTypes.DATE,
-      allowNull: true,
-    },
+      allowNull: true
+    }
   },
   {
     sequelize,

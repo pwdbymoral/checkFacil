@@ -71,18 +71,17 @@ Festa.init(
       allowNull: false
     },
     status: {
-    type: DataTypes.ENUM(
-      'RASCUNHO', 
-      'AGUARDANDO_CLIENTE', 
-      'PRONTA', 
-      'EM_ANDAMENTO', 
-      'CONCLUIDA',
-      'CANCELADA'
+      type: DataTypes.ENUM(
+        'RASCUNHO',
+        'AGUARDANDO_CLIENTE',
+        'PRONTA',
+        'EM_ANDAMENTO',
+        'CONCLUIDA',
+        'CANCELADA'
       ),
       allowNull: false,
-      defaultValue: 'RASCUNHO',
-    },
-    
+      defaultValue: 'RASCUNHO'
+    }
   },
   {
     sequelize,

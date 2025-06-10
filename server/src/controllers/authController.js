@@ -161,9 +161,9 @@ export async function definirSenha(req, res) {
       where: {
         redefineSenhaToken: token,
         redefineSenhaExpiracao: {
-          [Op.gt]: new Date(), // Agora 'Op' está definido!
-        },
-      },
+          [Op.gt]: new Date() // Agora 'Op' está definido!
+        }
+      }
     });
 
     if (!utilizador) {
@@ -180,11 +180,11 @@ export async function definirSenha(req, res) {
     // Salva as alterações
     await utilizador.save();
 
-    return res.status(200).json({ mensagem: 'Senha definida com sucesso! Agora você já pode fazer o login.' });
-
+    return res
+      .status(200)
+      .json({ mensagem: 'Senha definida com sucesso! Agora você já pode fazer o login.' });
   } catch (error) {
     console.error('Erro ao definir a senha:', error);
     return res.status(500).json({ error: 'Falha ao definir a senha.' });
   }
 }
-

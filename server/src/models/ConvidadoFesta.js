@@ -1,106 +1,99 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database.js';
 
-
 const TIPOS_CONVIDADO = {
   ADULTO_PAGANTE: 'ADULTO_PAGANTE',
   CRIANCA_PAGANTE: 'CRIANCA_PAGANTE',
   CRIANCA_ATE_1_ANO: 'CRIANCA_ATE_1_ANO',
   BABA: 'BABA',
   ANFITRIAO_FAMILIA_DIRETA: 'ANFITRIAO_FAMILIA_DIRETA',
-  ACOMPANHANTE_ATIPICO: 'ACOMPANHANTE_ATIPICO',
+  ACOMPANHANTE_ATIPICO: 'ACOMPANHANTE_ATIPICO'
 };
 
 class ConvidadoFesta extends Model {
-  
   static associate(models) {
     // Um ConvidadoFesta pertence a uma Festa
     this.belongsTo(models.Festa, {
       foreignKey: 'id_festa',
-      as: 'festa', 
+      as: 'festa'
     });
   }
 }
 
 ConvidadoFesta.init(
   {
-    
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
-      primaryKey: true,
+      primaryKey: true
     },
     id_festa: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      
+      allowNull: false
     },
     nome_convidado: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     idade_convidado: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: true
     },
     tipo_convidado: {
-      type: DataTypes.ENUM(...Object.values(TIPOS_CONVIDADO)), 
-      allowNull: false,
+      type: DataTypes.ENUM(...Object.values(TIPOS_CONVIDADO)),
+      allowNull: false
     },
     confirmou_presenca: {
       type: DataTypes.ENUM('PENDENTE', 'SIM', 'NAO'),
       allowNull: true,
-      defaultValue: 'PENDENTE',
+      defaultValue: 'PENDENTE'
     },
     checkin_at: {
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: true
     },
     checkout_at: {
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: true
     },
     observacao_convidado: {
       type: DataTypes.TEXT,
-      allowNull: true,
+      allowNull: true
     },
-    nome_responsavel:{
+    nome_responsavel: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
 
-    telefone_responsavel:{
+    telefone_responsavel: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: true
     },
     nascimento_convidado: {
       type: DataTypes.DATEONLY,
-      allowNull: true,
+      allowNull: true
     },
-     e_crianca_atipica: { 
+    e_crianca_atipica: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
-      defaultValue: false,
+      defaultValue: false
     },
-    telefone_convidado: { 
+    telefone_convidado: {
       type: DataTypes.STRING(25),
-      allowNull: true,
+      allowNull: true
     },
-    telefone_acompanhante: { 
+    telefone_acompanhante: {
       type: DataTypes.STRING(25),
-      allowNull: true,
-    },
-    
+      allowNull: true
+    }
   },
   {
-    
     sequelize,
     modelName: 'ConvidadoFesta',
-    tableName: 'convidadosFesta', 
-    timestamps: true,
+    tableName: 'convidadosFesta',
+    timestamps: true
   }
 );
-
 
 ConvidadoFesta.TIPOS_CONVIDADO = TIPOS_CONVIDADO;
 
