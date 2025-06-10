@@ -15,6 +15,11 @@ class Festa extends Model {
       foreignKey: 'id_organizador',
       as: 'organizador'
     });
+
+    this.hasMany(models.ConvidadoFesta, {
+      foreignKey: 'id_festa',
+      as: 'convidados'
+    });
   }
 }
 

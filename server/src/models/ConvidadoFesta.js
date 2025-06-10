@@ -73,7 +73,7 @@ ConvidadoFesta.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    data_nascimento: {
+    nascimento_convidado: {
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
