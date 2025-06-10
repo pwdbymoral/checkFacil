@@ -32,14 +32,14 @@ const StaffDashboardPage = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await api.get('/festa/listar-festas')
-        const mappedEvents: AppEvent[] = response.data.map((event: ApiEventResponse) => ({
-          id: event.id,
-          name: event.nome_festa,
-          date: event.data_festa,
-          organizerName: event.organizador?.nome,
-        }))
-        setEvents(mappedEvents)
+        const response = await api.get('/festa/listar')
+        const mappedEvents: AppEvent[] = response.data.festas.map((eventFromApi: ApiEventResponse) => ({
+          id: eventFromApi.id,
+          name: eventFromApi.nome_festa,
+          date: eventFromApi.data_festa,
+          organizerName: eventFromApi.organizador?.nome,
+        }));
+      setEvents(mappedEvents);
       } catch (error) {
         console.error('Erro ao buscar eventos:', error)
         setError('Erro ao buscar eventos')
