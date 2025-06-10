@@ -1,5 +1,6 @@
 import models from '../models/index.js';
 import jwt from 'jsonwebtoken';
+import { Op } from 'sequelize';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -141,3 +142,49 @@ export async function registrarAdmFesta(req, res) {
     return res.status(500).json({ error: 'Erro ao registrar administrador da festa.' });
   }
 }
+
+export async function definirSenha(req, res) {
+  try {
+    const { token, novaSenha } = req.body;
+
+    // Validação básica
+    if (!token || !novaSenha) {
+      return res.status(400).json({ error: 'Token e nova senha são obrigatórios.' });
+    }
+
+    if (novaSenha.length < 6) {
+      return res.status(400).json({ error: 'A senha deve ter pelo menos 6 caracteres.' });
+    }
+
+    // Encontra o utilizador pelo token e verifica se ele não expirou
+    const utilizador = await models.Usuario.findOne({
+      where: {
+        redefineSenhaToken: token,
+        redefineSenhaExpiracao: {
+          [Op.gt]: new Date(), // Agora 'Op' está definido!
+        },
+      },
+    });
+
+    if (!utilizador) {
+      return res.status(400).json({ error: 'Token inválido ou expirado.' });
+    }
+
+    // Atualiza a senha (o hook no modelo vai hashear)
+    utilizador.senha = novaSenha;
+
+    // Invalida o token para não ser usado novamente
+    utilizador.redefineSenhaToken = null;
+    utilizador.redefineSenhaExpiracao = null;
+
+    // Salva as alterações
+    await utilizador.save();
+
+    return res.status(200).json({ mensagem: 'Senha definida com sucesso! Agora você já pode fazer o login.' });
+
+  } catch (error) {
+    console.error('Erro ao definir a senha:', error);
+    return res.status(500).json({ error: 'Falha ao definir a senha.' });
+  }
+}
+

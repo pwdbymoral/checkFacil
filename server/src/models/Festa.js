@@ -64,7 +64,20 @@ Festa.init(
     id_organizador: {
       type: DataTypes.INTEGER,
       allowNull: false
-    }
+    },
+    status: {
+    type: DataTypes.ENUM(
+      'RASCUNHO', 
+      'AGUARDANDO_CLIENTE', 
+      'PRONTA', 
+      'EM_ANDAMENTO', 
+      'CONCLUIDA',
+      'CANCELADA'
+      ),
+      allowNull: false,
+      defaultValue: 'RASCUNHO',
+    },
+    
   },
   {
     sequelize,
