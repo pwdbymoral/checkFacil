@@ -3,110 +3,49 @@ import * as festaController from '../controllers/festaController.js';
 import { verificarTokenJWT } from '../middleware/validarReqAuth.js';
 
 const router = express.Router();
-
-
 // Todas as rotas estão protegidas e requerem autenticação via token JWT.
 
+// POST /festa/criar -> Cria uma nova festa
+router.post('/criar', verificarTokenJWT, festaController.criarFesta);
 
-// Cria uma nova festa.
-router.post(
-  '/criar',
-  verificarTokenJWT,
-  festaController.criarFesta
-);
+// GET /festa/listar -> Lista festas com base nas permissões e filtros.
+// Esta rota mais específica vem ANTES da rota genérica /:idFesta.
+router.get('/listar', verificarTokenJWT, festaController.buscarFestas);
 
-// Buscar Festa por ID.
-router.get(
-    '/:idFesta',
-    verificarTokenJWT,
-    festaController.buscarFestaPorId
-);
+// GET /festa/:idFesta -> Busca uma festa específica por ID.
+router.get('/:idFesta', verificarTokenJWT, festaController.buscarFestaPorId);
 
+// PATCH /festa/:idFesta -> Atualiza uma festa específica.
+router.patch('/:idFesta', verificarTokenJWT, festaController.atualizarFesta);
 
-//  Busca/lista festas com base nas permissões e filtros de data.
-router.get(
-  '/listar',
-  verificarTokenJWT,
-  festaController.buscarFestas
-);
+// DELETE /festa/:idFesta -> Deleta uma festa específica.
+router.delete('/:idFesta', verificarTokenJWT, festaController.deletarFesta);
 
 
-// Atualiza uma festa específica.
-router.patch(
-  '/:idFesta',
-  verificarTokenJWT,
-  festaController.atualizarFesta
-);
+// --- ROTAS PARA CONVIDADOS DE UMA FESTA ---
 
+// POST /festa/:idFesta/convidados -> Adiciona um convidado.
+router.post('/:idFesta/convidados', verificarTokenJWT, festaController.adicionarConvidado);
 
-// Deleta uma festa específica.
-router.delete(
-  '/:idFesta',
-  verificarTokenJWT,
-  festaController.deletarFesta
-);
+// GET /festa/:idFesta/convidados -> Lista todos os convidados.
+router.get('/:idFesta/convidados', verificarTokenJWT, festaController.listarConvidadosDaFesta);
 
+// GET /festa/:idFesta/convidados/buscar -> Busca convidados por nome.
+router.get('/:idFesta/convidados/buscar', verificarTokenJWT, festaController.buscarConvidadosPorNome);
 
-// Adiciona um novo convidado a uma festa.
-router.post(
-  '/:idFesta/convidados',
-  verificarTokenJWT,
-  festaController.adicionarConvidado
-);
+// GET /festa/:idFesta/convidados/:idConvidado -> Busca um convidado específico.
+router.get('/:idFesta/convidados/:idConvidado', verificarTokenJWT, festaController.buscarConvidadoPorId);
 
+// PATCH /festa/:idFesta/convidados/:idConvidado -> Atualiza um convidado.
+router.patch('/:idFesta/convidados/:idConvidado', verificarTokenJWT, festaController.atualizarConvidado);
 
-// Lista todos os convidados de uma festa.
-router.get(
-  '/:idFesta/convidados',
-  verificarTokenJWT,
-  festaController.listarConvidadosDaFesta
-);
+// DELETE /festa/:idFesta/convidados/:idConvidado -> Deleta um convidado.
+router.delete('/:idFesta/convidados/:idConvidado', verificarTokenJWT, festaController.deletarConvidado);
 
+// PATCH /festa/:idFesta/convidados/:idConvidado/checkin -> Realiza o check-in.
+router.patch('/:idFesta/convidados/:idConvidado/checkin', verificarTokenJWT, festaController.checkinConvidado);
 
-// Busca convidados por nome dentro de uma festa (ex: ?nome=Pedro).
-router.get(
-  '/:idFesta/convidados/buscar',
-  verificarTokenJWT,
-  festaController.buscarConvidadosPorNome
-);
-
-
-//  Atualiza um convidado específico.
-router.patch(
-  '/:idFesta/convidados/:idConvidado',
-  verificarTokenJWT,
-  festaController.atualizarConvidado
-);
-
-
-// Deleta um convidado específico.
-router.delete(
-  '/:idFesta/convidados/:idConvidado',
-  verificarTokenJWT,
-  festaController.deletarConvidado
-);
-
-
-//Realiza o check-in de um convidado.
-router.patch(
-  '/:idFesta/convidados/:idConvidado/checkin',
-  verificarTokenJWT,
-  festaController.checkinConvidado
-);
-
-
-// Realiza o check-out de um convidado.
-router.patch(
-  '/:idFesta/convidados/:idConvidado/checkout',
-  verificarTokenJWT,
-  festaController.checkoutConvidado
-);
-
-// Busca um convidado específico por ID dentro de uma festa.
-router.get(
-  '/:idFesta/convidados/:idConvidado',
-  verificarTokenJWT, 
-  festaController.buscarConvidadoPorId 
-);
+// PATCH /festa/:idFesta/convidados/:idConvidado/checkout -> Realiza o check-out.
+router.patch('/:idFesta/convidados/:idConvidado/checkout', verificarTokenJWT, festaController.checkoutConvidado);
 
 export default router;
