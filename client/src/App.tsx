@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/contexts/authContextCore'
 import CreateDraftEventPage from '@/pages/events/CreateDraftEventPage'
-import CreateEventPage from '@/pages/events/CreateEventPage'
 import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/LoginPage'
 import { SetPasswordPage } from '@/pages/SetPasswordPage'
@@ -70,19 +69,19 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="/staff/dashboard"
-            element={<ProtectedRoute element={<StaffDashboardPage />} />}
-          />
-          <Route
-            path="staff/events/createEvent"
-            element={<ProtectedRoute element={<CreateEventPage />} />}
+            element={
+              <ProtectedRoute element={<StaffDashboardPage />} allowedRoles={['Adm_espaco']} />
+            }
           />
           <Route
             path="/staff/events/newEventDraft"
-            element={<ProtectedRoute element={<CreateDraftEventPage />} />}
+            element={
+              <ProtectedRoute element={<CreateDraftEventPage />} allowedRoles={['Adm_espaco']} />
+            }
           />
           <Route
             path="/organizer/choosePassword"
-            element={<ProtectedRoute element={<SetPasswordPage />} />}
+            element={<ProtectedRoute element={<SetPasswordPage />} allowedRoles={['Adm_festa']} />}
           />
         </Routes>
       </main>

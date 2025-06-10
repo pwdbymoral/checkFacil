@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { useAuth } from '@/contexts/authContextCore'
 import api from '@/services/api'
 
-import type { StaffUser } from '@/contexts/authContextCore'
+import type { AuthenticatedUser } from '@/contexts/authContextCore'
 
 const setPasswordSchema = z
   .object({
@@ -67,7 +67,7 @@ export function SetPasswordPage() {
       const { usuario, token: jwtToken } = response.data;
 
       // Loga o usuário automaticamente
-      auth.login(usuario as StaffUser, jwtToken);
+      auth.login(usuario as AuthenticatedUser, jwtToken);
 
       toast.success("Senha definida com sucesso!", {
         description: "Você será redirecionado para completar os detalhes da sua festa."
@@ -98,7 +98,8 @@ export function SetPasswordPage() {
       description: 'Você será redirecionado em breve.',
     })
     setIsLoading(false)
-    navigate('/login') // Após definir a senha, leva para o login por enquanto
+    const exampleEventId = 1
+    navigate('/organizer/event/${exampleEventId}/details', { replace: true }) // Após definir a senha, leva para o login por enquanto
   }
 
   // 4. Estrutura da UI

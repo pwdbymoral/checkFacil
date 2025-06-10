@@ -2,8 +2,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { CalendarIcon, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 import * as z from 'zod'
 
 import { Button } from '@/components/ui/button'
@@ -30,6 +32,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
+import api from '@/services/api'
 
 const PartyPackageEnum = z.enum(
   ['KIDS', 'KIDS_MAIS_PARK', 'PLAY', 'PLAY_MAIS_PARK', 'SUPER_FESTA_COMPLETA'],
@@ -93,11 +96,13 @@ const createEventFormSchema = z.object({
 
 type CreateEventFormValues = z.infer<typeof createEventFormSchema>
 
-const CreateEventPage = () => {
+function CompleteEventDetailsPage() {
   const [isLoading, setIsLoading] = useState(false)
-  // const auth = useAuth()
-  // const navigate = useNavigate()
+  const [isFetching, setIsFetching] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
+  const { eventId } = useParams<{ eventId: string }>()
+  const navigate = useNavigate()
   const form = useForm<CreateEventFormValues>({
     resolver: zodResolver(createEventFormSchema),
     defaultValues: {
@@ -130,13 +135,112 @@ const CreateEventPage = () => {
     },
   })
 
-  async function onSubmit(values: CreateEventFormValues) {
-    setIsLoading(true)
-    // eslint-disable-next-line no-console
-    console.log('Dados do formulário para criar evento:', values)
+  useEffect(() => {
+    if (!eventId) return // Não faz nada se não houver eventId
 
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
+    const fetchEventData = async () => {
+      setIsFetching(true)
+      setError(null)
+      try {
+        // Precisaremos de um endpoint no backend como GET /festa/{eventId}
+        const response = await api.get(`/festa/${eventId}`)
+        const eventDataFromApi = response.data
+
+        // Mapeia os dados da API (snake_case) para os campos do nosso formulário (camelCase)
+        const defaultFormValues = {
+          organizerName: eventDataFromApi.organizador.nome, // Assumindo que a API retorna o organizador
+          organizerEmail: eventDataFromApi.organizador.email,
+          organizerPhone: eventDataFromApi.organizador.telefone,
+          organizerPassword: '', // Senha não deve ser pré-preenchida
+
+          partyName: eventDataFromApi.nome_festa,
+          partyDate: new Date(eventDataFromApi.data_festa), // Converte string de data para objeto Date
+          startTime: eventDataFromApi.horario_inicio || '',
+          endTime: eventDataFromApi.horario_fim || '',
+          partyLocation: eventDataFromApi.local_festa || '',
+          description: eventDataFromApi.descricao || '',
+          packageType: eventDataFromApi.pacote_escolhido,
+          contractedAdults: eventDataFromApi.numero_adultos_contratado,
+          contractedChildren: eventDataFromApi.numero_criancas_contratado,
+          birthdayPersonName: eventDataFromApi.nome_aniversariante,
+          birthdayPersonAge: eventDataFromApi.idade_aniversariante,
+          partyTheme: eventDataFromApi.tema_festa || '',
+          isDropOffParty: eventDataFromApi.festa_deixa_e_pegue || false,
+          allowsImageUse: eventDataFromApi.autoriza_uso_imagem || false,
+          clientInstagram: eventDataFromApi.instagram_cliente || '',
+          guestNotInListPolicy: eventDataFromApi.procedimento_convidado_fora_lista,
+          spotifyPlaylistLink: eventDataFromApi.link_playlist_spotify || '',
+          partyObservations: eventDataFromApi.observacoes_festa || '',
+        }
+
+        // Usa o método 'reset' do react-hook-form para popular o formulário
+        form.reset(defaultFormValues)
+      } catch (err) {
+        console.error('Erro ao buscar dados do evento:', err)
+        setError('Não foi possível carregar os detalhes do evento.')
+      } finally {
+        setIsFetching(false)
+      }
+    }
+
+    fetchEventData()
+  }, [eventId, form]) // Roda quando o eventId ou a instância do form mudam
+
+  async function onSubmit(values: CreateEventFormValues) {
+    if (!eventId) {
+      toast.error('Erro: ID do evento não encontrado.')
+      return
+    }
+
+    setIsLoading(true)
+
+    // Transforma os dados do formulário (camelCase) para o formato da API (snake_case)
+    const updatePayload = {
+      nome_festa: values.partyName,
+      data_festa: format(values.partyDate, 'yyyy-MM-dd'),
+      // Mapeie TODOS os outros campos aqui...
+      // ...
+      // Importante: A API de PUT pode não precisar dos dados do organizador ou senha.
+      // Verifique com seu dev backend quais campos são atualizáveis.
+    }
+
+    try {
+      // Precisaremos de um endpoint no backend como PUT /festa/{eventId}
+      await api.put(`/festa/${eventId}`, updatePayload)
+
+      toast.success('Detalhes da festa salvos com sucesso!')
+      // Redireciona para um local apropriado (dashboard do contratante ou do staff)
+      // Podemos usar a role do usuário logado para decidir para onde ir
+      // if (auth.user?.tipoUsuario === 'Adm_festa') {
+      //   navigate('/organizer/dashboard');
+      // } else {
+      //   navigate('/staff/dashboard');
+      // }
+      navigate(-1) // Uma opção simples: volta para a página anterior (o dashboard)
+    } catch (error: unknown) {
+      // ... sua lógica de tratamento de erro com toast.error ...
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isFetching) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-destructive">{error}</p>
+        <Button variant="outline" onClick={() => navigate(-1)} className="mt-4">
+          Voltar
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -589,4 +693,4 @@ const CreateEventPage = () => {
   )
 }
 
-export default CreateEventPage
+export default CompleteEventDetailsPage

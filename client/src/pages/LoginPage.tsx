@@ -24,7 +24,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useAuth, type StaffUser } from '@/contexts/authContextCore'
+import { useAuth, type AuthenticatedUser } from '@/contexts/authContextCore'
 
 const loginFormSchema = z.object({
   email: z
@@ -74,12 +74,13 @@ function LoginPage() {
       // eslint-disable-next-line no-console
       console.info(mensagem || 'Login API bem-sucedido:', { usuario, token })
 
-      const staffUserData: StaffUser = {
+      const authenticatedUserData: AuthenticatedUser = {
         id: usuario.id.toString(),
         email: usuario.email,
         name: usuario.nome,
+        userType: usuario.tipoUsuario,
       }
-      auth.login(staffUserData, token)
+      auth.login(authenticatedUserData, token)
       navigate('/staff/dashboard', { replace: true })
     } catch (error: unknown) {
       // eslint-disable-next-line no-console

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { AuthContext, type StaffUser, type AuthState } from './authContextCore'
+import { AuthContext, type AuthenticatedUser, type AuthState } from './authContextCore'
 
 import type { ReactNode } from 'react'
 
@@ -36,11 +36,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const checkAuthStatus = async () => {
       try {
-        const storedToken = localStorage.getItem('staffToken')
-        const storedUserJSON = localStorage.getItem('staffUser')
+        const storedToken = localStorage.getItem('userToken')
+        const storedUserJSON = localStorage.getItem('user')
 
         if (storedToken && storedUserJSON) {
-          const storedUser: StaffUser = JSON.parse(storedUserJSON)
+          const storedUser: AuthenticatedUser = JSON.parse(storedUserJSON)
           setAuthState({
             isAuthenticated: true,
             user: storedUser,
@@ -49,8 +49,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       } catch (error) {
         console.error('AuthProvider: Erro ao restaurar sessão:', error)
-        localStorage.removeItem('staffUser')
-        localStorage.removeItem('staffToken')
+        localStorage.removeItem('user')
+        localStorage.removeItem('userToken')
       }
     }
 
@@ -65,15 +65,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     })
   }, [])
 
-  const login = (userData: StaffUser, token?: string) => {
+  const login = (userData: AuthenticatedUser, token?: string) => {
     setAuthState({
       isAuthenticated: true,
       user: userData,
       token: token || null,
     })
-    localStorage.setItem('staffUser', JSON.stringify(userData))
+    localStorage.setItem('user', JSON.stringify(userData))
     if (token) {
-      localStorage.setItem('staffToken', token)
+      localStorage.setItem('userToken', token)
     }
   }
 
@@ -83,8 +83,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user: null,
       token: null,
     })
-    localStorage.removeItem('staffUser')
-    localStorage.removeItem('staffToken')
+    localStorage.removeItem('user')
+    localStorage.removeItem('userToken')
   }
 
   const value = {
