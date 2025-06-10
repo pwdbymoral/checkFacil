@@ -1,5 +1,12 @@
+# IDEs e Sistema
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
 # Yarn Berry / PnP
 .yarn/*
+
+# Agora, as exceções para o que NÃO deve ser ignorado funcionarão.
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
@@ -7,10 +14,12 @@
 !.yarn/versions
 
 # Arquivos de cache e estado do Yarn que DEVEM SER IGNORADOS
+# (Estes são cobertos pelo .yarn/*, mas é bom ser explícito)
 .yarn/cache
 .yarn/unplugged
+.yarn/build-state
 .yarn/install-state.gz
-.yarn/build-state # Se aplicável
+
 
 # Lockfiles de outros gerentes
 package-lock.json
