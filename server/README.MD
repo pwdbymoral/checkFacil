@@ -159,6 +159,24 @@ Exemplo de Corpo:
 }
 ```
 
+#### 🔸 GET `/festa/listar`
+
+Descrição: Lista festas com base na permissão (AdmEspaco vê todas; outros utilizadores veem apenas as suas). A rota agora suporta múltiplos filtros combinados e paginação.
+
+Filtros e Paginação (Query Params):
+
+- Busca Textual: `?search=Leo` (procura em `nome_festa` e `nome_aniversariante`)
+- Filtro por Status: `?status=RASCUNHO`
+- Filtro por Data Exata: `?data=2025-12-25`
+- Filtro por Intervalo de Datas: `?data_inicio=2025-12-01&data_fim=2025-12-31`
+- Paginação: `?page=1&limit=10`
+
+Exemplo de Uso Combinado:
+
+```http
+GET /festa/listar?search=Aniversário&status=PRONTA&page=1&limit=5
+```
+
 ---
 
 ## 🧑‍🤝‍🧑 Endpoints de Convidados (`/festa/:idFesta/...`)

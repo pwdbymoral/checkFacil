@@ -103,41 +103,47 @@ export async function criarFesta(req, res) {
 
 export async function buscarFestas(req, res) {
   try {
-    const idUsuarioLogado = req.usuarioId;
-    const tipoUsuarioLogado = req.usuarioTipo;
-    const { data, data_inicio, data_fim } = req.query; 
+    
+    const { usuarioId, usuarioTipo } = req;
+    const { data, data_inicio, data_fim, search, status, page = 1, limit = 20 } = req.query;
 
     let whereClause = {}; 
 
     
-    if (tipoUsuarioLogado !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO) {
-      whereClause.id_organizador = idUsuarioLogado;
+    if (usuarioTipo !== models.Usuario.TIPOS_USUARIO.ADM_ESPACO) {
+      whereClause.id_organizador = usuarioId;
     }
 
-    
+    // Filtro de Status
+    if (status) {
+      whereClause.status = status;
+    }
+
+    // Filtro de Data
     if (data) {
-      // Se uma data específica for fornecida
       whereClause.data_festa = data;
     } else if (data_inicio && data_fim) {
-      // Se um intervalo de datas for fornecido
-      whereClause.data_festa = {
-        [Op.between]: [data_inicio, data_fim],
-      };
-    } else if (data_inicio) {
-      // Se apenas a data de início for fornecida
-      whereClause.data_festa = {
-        [Op.gte]: data_inicio, //Maior ou igual a
-      };
-    } else if (data_fim) {
-      // Se apenas a data de fim for fornecida
-      whereClause.data_festa = {
-        [Op.lte]: data_fim, //Menor ou igual a
-      };
+      whereClause.data_festa = { [Op.between]: [data_inicio, data_fim] };
+    }
+
+    // Busca Textual 
+    if (search) {
+      whereClause[Op.or] = [
+        { nome_festa: { [Op.like]: `%${search}%` } },
+        { nome_aniversariante: { [Op.like]: `%${search}%` } }
+      ];
     }
     
+    // Paginação
+    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = parseInt(page, 10);
+    const offset = (parsedPage - 1) * parsedLimit;
 
-    const festas = await models.Festa.findAll({
-      where: whereClause, 
+    // findAndCountAll para obter os dados e a contagem total para a paginação
+    const { count, rows: festas } = await models.Festa.findAndCountAll({
+      where: whereClause,
+      limit: parsedLimit,
+      offset: offset,
       include: [
         {
           model: models.Usuario,
@@ -145,14 +151,20 @@ export async function buscarFestas(req, res) {
           attributes: ['id', 'nome', 'email']
         }
       ],
-      order: [['data_festa', 'ASC']] 
+      order: [['data_festa', 'DESC']]
     });
 
-    if (festas.length === 0) {
-      return res.status(200).json({ mensagem: "Nenhuma festa encontrada com os filtros aplicados.", festas: [] });
-    }
+    //resposta com os dados e as informações de paginação
+    const totalPages = Math.ceil(count / parsedLimit);
+    const response = {
+      totalItems: count,
+      totalPages: totalPages,
+      currentPage: parsedPage,
+      festas: festas
+    };
+    
+    return res.status(200).json(response);
 
-    return res.status(200).json(festas);
   } catch (error) {
     console.error('Erro ao listar festas:', error);
     return res.status(500).json({ error: 'Falha ao listar festas.' });
