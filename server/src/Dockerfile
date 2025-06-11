@@ -19,5 +19,5 @@ COPY . .
 # Expõe a porta que sua API usa para se comunicar
 EXPOSE 3001
 
-# Comando final para iniciar sua aplicação com Yarn
+# Comando final para iniciar sua aplicação com Yarn<<<<<<< configurar_docker
 CMD [ "node", "src/server.js" ]
