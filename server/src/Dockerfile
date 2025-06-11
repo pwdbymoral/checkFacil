@@ -20,4 +20,4 @@ COPY . .
 EXPOSE 3001
 
 # Comando final para iniciar sua aplicação com Yarn
-CMD [ "yarn", "start" ]
+CMD [ "node", "src/server.js" ]
