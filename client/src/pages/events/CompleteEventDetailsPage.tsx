@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import axios from 'axios'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { CalendarIcon, Loader2 } from 'lucide-react'
@@ -99,7 +100,7 @@ type CreateEventFormValues = z.infer<typeof createEventFormSchema>
 function CompleteEventDetailsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [pageError, setPageError] = useState<string | null>(null) //
 
   const { eventId } = useParams<{ eventId: string }>()
   const navigate = useNavigate()
@@ -136,35 +137,36 @@ function CompleteEventDetailsPage() {
   })
 
   useEffect(() => {
-    if (!eventId) return // Não faz nada se não houver eventId
+    if (!eventId) return
 
     const fetchEventData = async () => {
       setIsFetching(true)
-      setError(null)
       try {
-        // Precisaremos de um endpoint no backend como GET /festa/{eventId}
         const response = await api.get(`/festa/${eventId}`)
         const eventDataFromApi = response.data
 
-        // Mapeia os dados da API (snake_case) para os campos do nosso formulário (camelCase)
-        const defaultFormValues = {
-          organizerName: eventDataFromApi.organizador.nome, // Assumindo que a API retorna o organizador
-          organizerEmail: eventDataFromApi.organizador.email,
-          organizerPhone: eventDataFromApi.organizador.telefone,
-          organizerPassword: '', // Senha não deve ser pré-preenchida
+        const formValuesToSet = {
+          organizerName: eventDataFromApi.organizador?.nome || '',
+          organizerEmail: eventDataFromApi.organizador?.email || '',
+          organizerPhone: eventDataFromApi.organizador?.telefone || '',
+          organizerPassword: '', // Nunca pré-preenchemos senha
 
           partyName: eventDataFromApi.nome_festa,
-          partyDate: new Date(eventDataFromApi.data_festa), // Converte string de data para objeto Date
+          // Converte a string de data 'YYYY-MM-DD' da API para um objeto Date
+          partyDate: eventDataFromApi.data_festa
+            ? new Date(eventDataFromApi.data_festa.replace(/-/g, '/'))
+            : new Date(),
           startTime: eventDataFromApi.horario_inicio || '',
           endTime: eventDataFromApi.horario_fim || '',
-          partyLocation: eventDataFromApi.local_festa || '',
-          description: eventDataFromApi.descricao || '',
           packageType: eventDataFromApi.pacote_escolhido,
           contractedAdults: eventDataFromApi.numero_adultos_contratado,
           contractedChildren: eventDataFromApi.numero_criancas_contratado,
-          birthdayPersonName: eventDataFromApi.nome_aniversariante,
+
+          // Preencha os campos restantes que vêm da API
+          birthdayPersonName: eventDataFromApi.nome_aniversariante || '',
           birthdayPersonAge: eventDataFromApi.idade_aniversariante,
           partyTheme: eventDataFromApi.tema_festa || '',
+          description: eventDataFromApi.descricao || '',
           isDropOffParty: eventDataFromApi.festa_deixa_e_pegue || false,
           allowsImageUse: eventDataFromApi.autoriza_uso_imagem || false,
           clientInstagram: eventDataFromApi.instagram_cliente || '',
@@ -173,52 +175,65 @@ function CompleteEventDetailsPage() {
           partyObservations: eventDataFromApi.observacoes_festa || '',
         }
 
-        // Usa o método 'reset' do react-hook-form para popular o formulário
-        form.reset(defaultFormValues)
-      } catch (err) {
-        console.error('Erro ao buscar dados do evento:', err)
-        setError('Não foi possível carregar os detalhes do evento.')
-      } finally {
+        // Usa o método 'reset' do react-hook-form para popular o formulário inteiro
+        form.reset(formValuesToSet)
+      } catch (error) {
+        console.error('Erro ao buscar dados do evento:', error)
+        setPageError('Não foi possível carregar os detalhes do evento.') // 2. USE setPageError AQUI      } finally {
         setIsFetching(false)
       }
     }
 
     fetchEventData()
-  }, [eventId, form]) // Roda quando o eventId ou a instância do form mudam
+  }, [eventId, form])
 
   async function onSubmit(values: CreateEventFormValues) {
     if (!eventId) {
-      toast.error('Erro: ID do evento não encontrado.')
+      toast.error('Erro: ID do evento não foi encontrado para salvar as alterações.')
       return
     }
 
     setIsLoading(true)
 
-    // Transforma os dados do formulário (camelCase) para o formato da API (snake_case)
+    // 1. Transforma os dados do formulário (camelCase) para o formato da API (snake_case)
+    //    Enviamos apenas os campos que o Contratante pode editar.
     const updatePayload = {
-      nome_festa: values.partyName,
-      data_festa: format(values.partyDate, 'yyyy-MM-dd'),
-      // Mapeie TODOS os outros campos aqui...
-      // ...
-      // Importante: A API de PUT pode não precisar dos dados do organizador ou senha.
-      // Verifique com seu dev backend quais campos são atualizáveis.
+      // Detalhes da festa que o contratante pode preencher/alterar
+      horario_inicio: values.startTime || null,
+      horario_fim: values.endTime || null,
+      descricao: values.description,
+      nome_aniversariante: values.birthdayPersonName,
+      idade_aniversariante: values.birthdayPersonAge,
+      tema_festa: values.partyTheme,
+      festa_deixa_e_pegue: values.isDropOffParty,
+      autoriza_uso_imagem: values.allowsImageUse,
+      instagram_cliente: values.clientInstagram,
+      procedimento_convidado_fora_lista: values.guestNotInListPolicy || null,
+      link_playlist_spotify: values.spotifyPlaylistLink || null,
+      observacoes_festa: values.partyObservations,
+      status: 'PRONTA', // Atualiza o status da festa, indicando que foi detalhada
     }
 
     try {
-      // Precisaremos de um endpoint no backend como PUT /festa/{eventId}
-      await api.put(`/festa/${eventId}`, updatePayload)
+      // 2. Chama o endpoint PATCH para atualizar a festa
+      await api.patch(`/festa/${eventId}`, updatePayload)
 
       toast.success('Detalhes da festa salvos com sucesso!')
-      // Redireciona para um local apropriado (dashboard do contratante ou do staff)
-      // Podemos usar a role do usuário logado para decidir para onde ir
-      // if (auth.user?.tipoUsuario === 'Adm_festa') {
-      //   navigate('/organizer/dashboard');
-      // } else {
-      //   navigate('/staff/dashboard');
-      // }
-      navigate(-1) // Uma opção simples: volta para a página anterior (o dashboard)
+
+      // 3. Redireciona o usuário para uma página de "próximos passos" ou de volta.
+      // TODO: Quando o painel do contratante existir, redirecionar para lá.
+      // Por enquanto, podemos navegar para a página de login ou home com uma mensagem.
+      navigate('/login') // Ou para um futuro '/organizer/dashboard'
     } catch (error: unknown) {
-      // ... sua lógica de tratamento de erro com toast.error ...
+      let errorMessage = 'Ocorreu um erro inesperado.'
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage = error.response.data.error || error.response.data.message || errorMessage
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      toast.error('Falha ao salvar os detalhes da festa', {
+        description: errorMessage,
+      })
     } finally {
       setIsLoading(false)
     }
@@ -232,10 +247,10 @@ function CompleteEventDetailsPage() {
     )
   }
 
-  if (error) {
+  if (pageError) {
     return (
       <div className="text-center p-8">
-        <p className="text-destructive">{error}</p>
+        <p className="text-destructive">{pageError}</p>
         <Button variant="outline" onClick={() => navigate(-1)} className="mt-4">
           Voltar
         </Button>
@@ -249,9 +264,9 @@ function CompleteEventDetailsPage() {
       {/* Limita a largura para formulários longos */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Criar Nova Festa</CardTitle>
+          <CardTitle className="text-2xl">Complete os Detalhes da Sua Festa</CardTitle>
           <CardDescription>
-            Preencha os detalhes abaixo para agendar uma nova festa.
+            Revise e preencha as informações abaixo para finalizar o agendamento.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -268,7 +283,7 @@ function CompleteEventDetailsPage() {
                       <FormItem>
                         <FormLabel>Nome do Contratante</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nome completo" {...field} />
+                          <Input placeholder="Nome completo" {...field} disabled />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -281,7 +296,12 @@ function CompleteEventDetailsPage() {
                       <FormItem>
                         <FormLabel>Email do Contratante</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="email@contratante.com" {...field} />
+                          <Input
+                            type="email"
+                            placeholder="email@contratante.com"
+                            {...field}
+                            disabled
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
