@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react'
+import { FilePenLine, Loader2, PlusCircle, Users } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -56,7 +56,7 @@ const StaffDashboardPage = () => {
   const navigate = useNavigate()
 
   const handleCreateNewEvent = () => {
-    navigate('/staff/events/newEventDraft')
+    navigate('/staff/events/createEventDraft')
   }
 
   return (
@@ -75,8 +75,14 @@ const StaffDashboardPage = () => {
       <section className="mb-8">
         <div className="flex flex-col items-start gap-3 mb-4 md:justify-between md:items-center">
           <h2 className="text-2xl font-semibold text-foreground">Festas Agendadas</h2>
-          <Button onClick={handleCreateNewEvent} className="w-full md:w-auto">
-            🎉 Criar Nova Festa
+          <Button onClick={handleCreateNewEvent} className="w-full">
+            <Link
+              to="/staff/events/createEventDraft"
+              className="flex justify-between items-center gap-2"
+            >
+              <PlusCircle className="h-5 w-5" />
+              <span>Criar Nova Festa</span>
+            </Link>
           </Button>
         </div>
 
@@ -90,7 +96,10 @@ const StaffDashboardPage = () => {
           ) : events.length > 0 ? (
             <ul className="space-y-4">
               {events.map((event) => (
-                <li key={event.id} className="border rounded-lg p-4">
+                <li
+                  key={event.id}
+                  className="border-b last:border-b-0 pb-4 last:pb-0 flex flex-col md:flex-row justify-between md:items-center gap-4"
+                >
                   <h3 className="text-lg font-semibold">{event.name}</h3>
                   <p className="text-muted-foreground break-words text-pretty">
                     Data: {new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
@@ -98,11 +107,27 @@ const StaffDashboardPage = () => {
                   <p className="text-muted-foreground break-words text-pretty">
                     Organizador: {event.organizerName || 'Desconhecido'}
                   </p>
-                  <Button asChild className="w-full md:w-auto" size={'sm'} variant={'outline'}>
-                    <Link to={`/staff/event/${event.id}`} className="text-primary hover:opacity-80">
-                      Ver Detalhes
-                    </Link>
-                  </Button>
+                  <div className="flex flex-row w-full md:w-auto md:max-w-xs gap-2">
+                    <Button asChild className="flex-1" variant={'outline'}>
+                      <Link
+                        to={`/staff/event/${event.id}`}
+                        className="text-primary hover:opacity-80"
+                      >
+                        <FilePenLine className="h-5 w-5 sm:mr-2" />
+                        <span className="hidden sm:inline">Detalhes</span>{' '}
+                      </Link>
+                    </Button>
+                    <Button asChild className="flex-1">
+                      <Link
+                        to={`/event/${event.id}/guests`}
+                        title="Gerenciar Convidados"
+                        className="flex justify-center items-center"
+                      >
+                        <Users className="h-5 w-5 sm:mr-2" />
+                        <span className="hidden sm:inline">Convidados</span>
+                      </Link>
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
