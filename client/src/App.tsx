@@ -40,11 +40,22 @@ function App() {
   if (auth.initialLoading) {
     return <SplashScreen />
   }
+
+  const dashboardPath =
+    auth.user?.userType === 'Adm_espaco'
+      ? '/staff/dashboard'
+      : auth.user?.userType === 'Adm_festa'
+        ? '/organizer/dashboard'
+        : '/'
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="p-4 bg-primary text-primary-foreground shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold hover:opacity-80">
+          <Link
+            to={auth.isAuthenticated ? dashboardPath : '/'}
+            className="text-xl font-bold hover:opacity-80"
+          >
             Check Fácil
           </Link>
           {auth.isAuthenticated ? (
@@ -56,7 +67,7 @@ function App() {
                     variant="link"
                     className="text-primary-foreground p-0 h-auto text-sm md:text-base"
                   >
-                    <Link to="/staff/dashboard">Painel</Link>
+                    <Link to={dashboardPath}>Painel</Link>
                   </Button>
                 </li>
                 <li>
@@ -67,6 +78,7 @@ function App() {
               </ul>
             </nav>
           ) : (
+            // NAV PARA USUÁRIOS DESLOGADOS (NÃO MUDA)
             <nav>
               <ul className="flex items-center space-x-2 md:space-x-4">
                 <li>
