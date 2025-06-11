@@ -11,6 +11,20 @@ import { SetPasswordPage } from '@/pages/SetPasswordPage'
 import StaffDashboardPage from '@/pages/StaffDashboardPage'
 import { ProtectedRoute } from '@/router/ProtectedRoute'
 
+function UnauthorizedPage() {
+  return (
+    <div className="flex flex-col items-center justify-center text-center p-8">
+      <h1 className="text-3xl font-bold text-destructive">Acesso Não Autorizado</h1>
+      <p className="mt-4 text-muted-foreground">
+        Você não tem permissão para acessar a página solicitada.
+      </p>
+      <Button asChild className="mt-6">
+        <Link to="/">Voltar para a Página Inicial</Link>
+      </Button>
+    </div>
+  )
+}
+
 function App() {
   const auth = useAuth()
   const navigate = useNavigate()
@@ -79,10 +93,8 @@ function App() {
               <ProtectedRoute element={<CreateDraftEventPage />} allowedRoles={['Adm_espaco']} />
             }
           />
-          <Route
-            path="/organizer/choosePassword"
-            element={<ProtectedRoute element={<SetPasswordPage />} allowedRoles={['Adm_festa']} />}
-          />
+          <Route path="/organizer/choosePassword/:token" element={<SetPasswordPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
         </Routes>
       </main>
       <footer className="p-4 bg-muted text-muted-foreground text-center text-sm">

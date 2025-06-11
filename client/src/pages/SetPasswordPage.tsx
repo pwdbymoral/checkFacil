@@ -21,8 +21,6 @@ import { Input } from '@/components/ui/input'
 import { useAuth } from '@/contexts/authContextCore'
 import api from '@/services/api'
 
-import type { AuthenticatedUser } from '@/contexts/authContextCore'
-
 const setPasswordSchema = z
   .object({
     password: z.string().min(6, { message: 'A senha deve ter no mínimo 6 caracteres.' }),
@@ -30,14 +28,14 @@ const setPasswordSchema = z
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'As senhas não coincidem.',
-    path: ['confirmPassword'], // O erro aparecerá no campo de confirmação de senha
+    path: ['confirmPassword'],
   })
 
 type SetPasswordFormValues = z.infer<typeof setPasswordSchema>
 
 export function SetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
-  const { token } = useParams<{ token: string }>() // Pega o token da URL
+  const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
   const auth = useAuth()
 
@@ -49,60 +47,40 @@ export function SetPasswordPage() {
   async function onSubmit(values: SetPasswordFormValues) {
     setIsLoading(true)
 
-    // eslint-disable-next-line no-console
-    console.log({
-      message: 'Dados a serem enviados para o backend:',
-      token,
-      password: values.password,
-    })
-
-    // Lógica REAL da API (a ser implementada quando o backend estiver pronto)
-    /*
-    try {
-      const response = await api.post('/auth/set-password', {
-        token: token,
-        newPassword: values.password
-      });
-
-      const { usuario, token: jwtToken } = response.data;
-
-      // Loga o usuário automaticamente
-      auth.login(usuario as AuthenticatedUser, jwtToken);
-
-      toast.success("Senha definida com sucesso!", {
-        description: "Você será redirecionado para completar os detalhes da sua festa."
-      });
-
-      // TODO: Redirecionar para a página de detalhamento da festa
-      // navigate(`/contratante/evento/${idDaFesta}/detalhes`);
-      navigate('/'); // Redireciona para home por enquanto
-      
-    } catch (error: unknown) {
-      let errorMessage = 'Ocorreu um erro inesperado.';
-      if (axios.isAxiosError(error) && error.response) {
-        errorMessage = error.response.data.error || error.response.data.message || errorMessage;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      toast.error("Falha ao definir a senha", {
-        description: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
+    if (!token) {
+      toast.error('Token de redefinição inválido ou não encontrado.')
+      setIsLoading(false)
+      return
     }
-    */
 
-    // Lógica SIMULADA por enquanto
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    toast.success('Senha definida com sucesso! (Simulação)', {
-      description: 'Você será redirecionado em breve.',
-    })
-    setIsLoading(false)
-    const exampleEventId = 1
-    navigate('/organizer/event/${exampleEventId}/details', { replace: true }) // Após definir a senha, leva para o login por enquanto
+    const payload = {
+      token: token,
+      novaSenha: values.password,
+    }
+
+    try {
+      const response = await api.post('/auth/definir-senha', payload)
+
+      toast.success('Senha definida com sucesso!', {
+        description: response.data.mensagem || 'Agora você já pode fazer o login.',
+      })
+
+      navigate('/login')
+    } catch (error: unknown) {
+      let errorMessage = 'Ocorreu um erro inesperado.'
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage = error.response.data.error || error.response.data.message || errorMessage
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      toast.error('Falha ao definir a senha', {
+        description: errorMessage,
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  // 4. Estrutura da UI
   return (
     <div className="flex min-h-full items-center justify-center p-4">
       <Card className="w-full max-w-md">
