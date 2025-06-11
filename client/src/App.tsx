@@ -7,9 +7,26 @@ import { useAuth } from '@/contexts/authContextCore'
 import CreateDraftEventPage from '@/pages/events/CreateDraftEventPage'
 import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/LoginPage'
+import OrganizerDashboardPage from '@/pages/OrganizerDashboardPage'
 import { SetPasswordPage } from '@/pages/SetPasswordPage'
 import StaffDashboardPage from '@/pages/StaffDashboardPage'
 import { ProtectedRoute } from '@/router/ProtectedRoute'
+
+import CompleteEventDetailsPage from './pages/events/CompleteEventDetailsPage'
+
+function UnauthorizedPage() {
+  return (
+    <div className="flex flex-col items-center justify-center text-center p-8">
+      <h1 className="text-3xl font-bold text-destructive">Acesso Não Autorizado</h1>
+      <p className="mt-4 text-muted-foreground">
+        Você não tem permissão para acessar a página solicitada.
+      </p>
+      <Button asChild className="mt-6">
+        <Link to="/">Voltar para a Página Inicial</Link>
+      </Button>
+    </div>
+  )
+}
 
 function App() {
   const auth = useAuth()
@@ -23,11 +40,22 @@ function App() {
   if (auth.initialLoading) {
     return <SplashScreen />
   }
+
+  const dashboardPath =
+    auth.user?.userType === 'Adm_espaco'
+      ? '/staff/dashboard'
+      : auth.user?.userType === 'Adm_festa'
+        ? '/organizer/dashboard'
+        : '/'
+
   return (
     <div className="flex flex-col min-h-screen">
       <header className="p-4 bg-primary text-primary-foreground shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-xl font-bold hover:opacity-80">
+          <Link
+            to={auth.isAuthenticated ? dashboardPath : '/'}
+            className="text-xl font-bold hover:opacity-80"
+          >
             Check Fácil
           </Link>
           {auth.isAuthenticated ? (
@@ -39,7 +67,7 @@ function App() {
                     variant="link"
                     className="text-primary-foreground p-0 h-auto text-sm md:text-base"
                   >
-                    <Link to="/staff/dashboard">Painel</Link>
+                    <Link to={dashboardPath}>Painel</Link>
                   </Button>
                 </li>
                 <li>
@@ -50,6 +78,7 @@ function App() {
               </ul>
             </nav>
           ) : (
+            // NAV PARA USUÁRIOS DESLOGADOS (NÃO MUDA)
             <nav>
               <ul className="flex items-center space-x-2 md:space-x-4">
                 <li>
@@ -65,8 +94,13 @@ function App() {
 
       <main className="container mx-auto w-full flex flex-col flex-grow">
         <Routes>
+          {/* Rotas Públicas */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/organizer/choosePassword/:token" element={<SetPasswordPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
+          {/* Rotas Protegidas do Staff */}
           <Route
             path="/staff/dashboard"
             element={
@@ -74,14 +108,38 @@ function App() {
             }
           />
           <Route
-            path="/staff/events/newEventDraft"
+            path="/staff/events/createEventDraft"
             element={
               <ProtectedRoute element={<CreateDraftEventPage />} allowedRoles={['Adm_espaco']} />
             }
           />
+          {/* 2. ADICIONE A ROTA DE DETALHES PARA O STAFF */}
           <Route
-            path="/organizer/choosePassword"
-            element={<ProtectedRoute element={<SetPasswordPage />} allowedRoles={['Adm_festa']} />}
+            path="/staff/event/:eventId/details"
+            element={
+              <ProtectedRoute
+                element={<CompleteEventDetailsPage />}
+                allowedRoles={['Adm_espaco']}
+              />
+            }
+          />
+
+          {/* Rotas Protegidas do Contratante */}
+          <Route
+            path="/organizer/dashboard"
+            element={
+              <ProtectedRoute element={<OrganizerDashboardPage />} allowedRoles={['Adm_festa']} />
+            }
+          />
+          {/* 3. ADICIONE A ROTA DE DETALHES PARA O CONTRATANTE */}
+          <Route
+            path="/organizer/event/:eventId/details"
+            element={
+              <ProtectedRoute
+                element={<CompleteEventDetailsPage />}
+                allowedRoles={['Adm_festa', 'Adm_espaco']}
+              />
+            }
           />
         </Routes>
       </main>

@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import axios from 'axios'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { CalendarIcon, Loader2 } from 'lucide-react'
@@ -34,27 +35,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import api from '@/services/api'
 
-const PartyPackageEnum = z.enum(
-  ['KIDS', 'KIDS_MAIS_PARK', 'PLAY', 'PLAY_MAIS_PARK', 'SUPER_FESTA_COMPLETA'],
-  { message: 'Pacote inválido.' },
-)
-
-const GuestNotInListPolicyEnum = z.enum(['PERMITIR_ANOTAR', 'CHAMAR_ANFITRIAO'], {
-  message: 'Procedimento inválido.',
-})
-
-const createEventFormSchema = z.object({
-  organizerName: z.string().min(1, 'Nome do contratante é obrigatório.'),
-  organizerEmail: z.string().min(1, 'Email do contratante é obrigatório.').email('Email inválido.'),
-  organizerPhone: z
-    .string()
-    .min(10, 'Telefone do contratante inválido.')
-    .optional()
-    .or(z.literal('')),
-  organizerPassword: z.string().min(6, 'Senha do contratante deve ter no mínimo 6 caracteres.'),
-
-  partyName: z.string().min(1, 'Nome da festa é obrigatório.'),
-  partyDate: z.date({ required_error: 'Data da festa é obrigatória.' }),
+const completeDetailsSchema = z.object({
+  // Campos que o Contratante/Staff podem alterar
   startTime: z
     .string()
     .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Formato de hora inválido (HH:MM).')
@@ -65,57 +47,54 @@ const createEventFormSchema = z.object({
     .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Formato de hora inválido (HH:MM).')
     .optional()
     .or(z.literal('')),
-  partyLocation: z.string().optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
-
-  packageType: PartyPackageEnum.optional().or(z.literal('')),
-  contractedAdults: z.coerce
-    .number()
-    .int()
-    .positive('Deve ser um número positivo.')
-    .optional()
-    .nullable(),
-  contractedChildren: z.coerce
-    .number()
-    .int()
-    .positive('Deve ser um número positivo.')
-    .optional()
-    .nullable(),
-
   birthdayPersonName: z.string().min(1, 'Nome do aniversariante é obrigatório.'),
   birthdayPersonAge: z.coerce.number().int().positive('Idade inválida.').optional().nullable(),
-
   partyTheme: z.string().optional().or(z.literal('')),
-  isDropOffParty: z.boolean().optional().default(false),
-  allowsImageUse: z.boolean().optional().default(false),
+  isDropOffParty: z.boolean().default(false),
+  allowsImageUse: z.boolean().default(false),
   clientInstagram: z.string().optional().or(z.literal('')),
-  guestNotInListPolicy: GuestNotInListPolicyEnum.optional().or(z.literal('')),
-  spotifyPlaylistLink: z.string().url('URL inválida.').optional().or(z.literal('')),
+  guestNotInListPolicy: z
+    .enum(['PERMITIR_ANOTAR', 'CHAMAR_ANFITRIAO'], { message: 'Procedimento inválido.' })
+    .optional()
+    .or(z.literal('')),
+  spotifyPlaylistLink: z
+    .string()
+    .url({ message: 'Por favor, insira uma URL válida.' })
+    .optional()
+    .or(z.literal('')),
   partyObservations: z.string().optional().or(z.literal('')),
+
+  // Campos desabilitados que precisam estar no schema para o form.reset() funcionar
+  partyName: z.string(),
+  partyDate: z.date(),
+  packageType: z
+    .enum(['KIDS', 'KIDS_MAIS_PARK', 'PLAY', 'PLAY_MAIS_PARK', 'SUPER_FESTA_COMPLETA'])
+    .optional()
+    .or(z.literal('')),
+  contractedAdults: z.number().nullable(),
+  contractedChildren: z.number().nullable(),
 })
 
-type CreateEventFormValues = z.infer<typeof createEventFormSchema>
+// 2. ATUALIZE o nome do tipo
+type CompleteDetailsFormValues = z.infer<typeof completeDetailsSchema>
 
 function CompleteEventDetailsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isFetching, setIsFetching] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [pageError, setPageError] = useState<string | null>(null)
+  const [eventStatus, setEventStatus] = useState<string | null>(null)
 
   const { eventId } = useParams<{ eventId: string }>()
   const navigate = useNavigate()
-  const form = useForm<CreateEventFormValues>({
-    resolver: zodResolver(createEventFormSchema),
-    defaultValues: {
-      organizerName: '',
-      organizerEmail: '',
-      organizerPhone: '',
-      organizerPassword: '',
 
+  const form = useForm<CompleteDetailsFormValues>({
+    resolver: zodResolver(completeDetailsSchema),
+    defaultValues: {
       partyName: '',
       partyDate: new Date(),
       startTime: '',
       endTime: '',
-      partyLocation: '',
       description: '',
 
       packageType: undefined,
@@ -136,35 +115,31 @@ function CompleteEventDetailsPage() {
   })
 
   useEffect(() => {
-    if (!eventId) return // Não faz nada se não houver eventId
+    if (!eventId) return
 
     const fetchEventData = async () => {
       setIsFetching(true)
-      setError(null)
       try {
-        // Precisaremos de um endpoint no backend como GET /festa/{eventId}
         const response = await api.get(`/festa/${eventId}`)
         const eventDataFromApi = response.data
 
-        // Mapeia os dados da API (snake_case) para os campos do nosso formulário (camelCase)
-        const defaultFormValues = {
-          organizerName: eventDataFromApi.organizador.nome, // Assumindo que a API retorna o organizador
-          organizerEmail: eventDataFromApi.organizador.email,
-          organizerPhone: eventDataFromApi.organizador.telefone,
-          organizerPassword: '', // Senha não deve ser pré-preenchida
+        setEventStatus(eventDataFromApi.status)
 
+        const formValuesToSet = {
           partyName: eventDataFromApi.nome_festa,
-          partyDate: new Date(eventDataFromApi.data_festa), // Converte string de data para objeto Date
-          startTime: eventDataFromApi.horario_inicio || '',
-          endTime: eventDataFromApi.horario_fim || '',
-          partyLocation: eventDataFromApi.local_festa || '',
-          description: eventDataFromApi.descricao || '',
+          partyDate: eventDataFromApi.data_festa
+            ? new Date(eventDataFromApi.data_festa.replace(/-/g, '/'))
+            : new Date(),
           packageType: eventDataFromApi.pacote_escolhido,
           contractedAdults: eventDataFromApi.numero_adultos_contratado,
           contractedChildren: eventDataFromApi.numero_criancas_contratado,
-          birthdayPersonName: eventDataFromApi.nome_aniversariante,
+          // Campos que o contratante edita
+          startTime: eventDataFromApi.horario_inicio || '',
+          endTime: eventDataFromApi.horario_fim || '',
+          birthdayPersonName: eventDataFromApi.nome_aniversariante || '',
           birthdayPersonAge: eventDataFromApi.idade_aniversariante,
           partyTheme: eventDataFromApi.tema_festa || '',
+          description: eventDataFromApi.descricao || '',
           isDropOffParty: eventDataFromApi.festa_deixa_e_pegue || false,
           allowsImageUse: eventDataFromApi.autoriza_uso_imagem || false,
           clientInstagram: eventDataFromApi.instagram_cliente || '',
@@ -172,53 +147,55 @@ function CompleteEventDetailsPage() {
           spotifyPlaylistLink: eventDataFromApi.link_playlist_spotify || '',
           partyObservations: eventDataFromApi.observacoes_festa || '',
         }
-
-        // Usa o método 'reset' do react-hook-form para popular o formulário
-        form.reset(defaultFormValues)
+        form.reset(formValuesToSet)
       } catch (err) {
+        setPageError('Não foi possível carregar os detalhes do evento.')
         console.error('Erro ao buscar dados do evento:', err)
-        setError('Não foi possível carregar os detalhes do evento.')
       } finally {
         setIsFetching(false)
       }
     }
-
     fetchEventData()
-  }, [eventId, form]) // Roda quando o eventId ou a instância do form mudam
+  }, [eventId, form])
 
-  async function onSubmit(values: CreateEventFormValues) {
+  async function onSubmit(values: CompleteDetailsFormValues) {
     if (!eventId) {
       toast.error('Erro: ID do evento não encontrado.')
       return
     }
-
     setIsLoading(true)
 
-    // Transforma os dados do formulário (camelCase) para o formato da API (snake_case)
     const updatePayload = {
-      nome_festa: values.partyName,
-      data_festa: format(values.partyDate, 'yyyy-MM-dd'),
-      // Mapeie TODOS os outros campos aqui...
-      // ...
-      // Importante: A API de PUT pode não precisar dos dados do organizador ou senha.
-      // Verifique com seu dev backend quais campos são atualizáveis.
+      // Apenas os campos que o Contratante realmente pode mudar
+      horario_inicio: values.startTime || null,
+      horario_fim: values.endTime || null,
+      descricao: values.description,
+      nome_aniversariante: values.birthdayPersonName,
+      idade_aniversariante: values.birthdayPersonAge,
+      tema_festa: values.partyTheme,
+      festa_deixa_e_pegue: values.isDropOffParty,
+      autoriza_uso_imagem: values.allowsImageUse,
+      instagram_cliente: values.clientInstagram,
+      procedimento_convidado_fora_lista: values.guestNotInListPolicy || null,
+      link_playlist_spotify: values.spotifyPlaylistLink || null,
+      observacoes_festa: values.partyObservations,
+      status: 'PRONTA', // Muda o status para indicar que foi completado
     }
 
     try {
-      // Precisaremos de um endpoint no backend como PUT /festa/{eventId}
-      await api.put(`/festa/${eventId}`, updatePayload)
-
+      await api.patch(`/festa/${eventId}`, updatePayload)
       toast.success('Detalhes da festa salvos com sucesso!')
-      // Redireciona para um local apropriado (dashboard do contratante ou do staff)
-      // Podemos usar a role do usuário logado para decidir para onde ir
-      // if (auth.user?.tipoUsuario === 'Adm_festa') {
-      //   navigate('/organizer/dashboard');
-      // } else {
-      //   navigate('/staff/dashboard');
-      // }
-      navigate(-1) // Uma opção simples: volta para a página anterior (o dashboard)
+      navigate(-1)
     } catch (error: unknown) {
-      // ... sua lógica de tratamento de erro com toast.error ...
+      let errorMessage = 'Ocorreu um erro inesperado.'
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage = error.response.data.error || error.response.data.message || errorMessage
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      toast.error('Falha ao salvar os detalhes da festa', {
+        description: errorMessage,
+      })
     } finally {
       setIsLoading(false)
     }
@@ -232,10 +209,10 @@ function CompleteEventDetailsPage() {
     )
   }
 
-  if (error) {
+  if (pageError) {
     return (
       <div className="text-center p-8">
-        <p className="text-destructive">{error}</p>
+        <p className="text-destructive">{pageError}</p>
         <Button variant="outline" onClick={() => navigate(-1)} className="mt-4">
           Voltar
         </Button>
@@ -245,87 +222,19 @@ function CompleteEventDetailsPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-3xl">
-      {' '}
-      {/* Limita a largura para formulários longos */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Criar Nova Festa</CardTitle>
+          <CardTitle className="text-2xl">Complete os Detalhes da Sua Festa</CardTitle>
           <CardDescription>
-            Preencha os detalhes abaixo para agendar uma nova festa.
+            Revise e preencha as informações abaixo para finalizar o agendamento.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* Seção: Dados do Contratante */}
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold mb-4 border-b pb-2">Dados do Contratante</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 md:items-start">
-                  <FormField
-                    control={form.control}
-                    name="organizerName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome do Contratante</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nome completo" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="organizerEmail"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email do Contratante</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="email@contratante.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="organizerPhone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Telefone do Contratante</FormLabel>
-                        <FormControl>
-                          <Input placeholder="(XX) XXXXX-XXXX" {...field} />
-                        </FormControl>
-                        <FormDescription className="text-left">
-                          Opcional, mas recomendado para contato rápido.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="organizerPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Senha para o Contratante</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Senha de acesso" {...field} />
-                        </FormControl>
-                        <FormDescription className="text-left">
-                          Será usada para o contratante acessar a lista de convidados.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Seção: Dados da Festa */}
-              <div>
-                <h3 className="text-lg font-semibold my-4 border-b pb-2">Dados da Festa</h3>
-                <div className="space-y-6">
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">Detalhes Contratados</h3>
+                <div className="space-y-6 rounded-md border p-4 bg-muted/50">
                   <FormField
                     control={form.control}
                     name="partyName"
@@ -333,7 +242,11 @@ function CompleteEventDetailsPage() {
                       <FormItem>
                         <FormLabel>Nome da Festa</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: Aniversário do(a) Joãozinho" {...field} />
+                          <Input
+                            placeholder="Ex: Aniversário do(a) Joãozinho"
+                            {...field}
+                            disabled
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -354,6 +267,7 @@ function CompleteEventDetailsPage() {
                                   'w-full pl-3 text-left font-normal',
                                   !field.value && 'text-muted-foreground',
                                 )}
+                                disabled
                               >
                                 {field.value ? (
                                   format(field.value, 'PPP', { locale: ptBR })
@@ -381,46 +295,9 @@ function CompleteEventDetailsPage() {
                       </FormItem>
                     )}
                   />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {' '}
-                    {/* Para horários lado a lado */}
-                    <FormField
-                      control={form.control}
-                      name="startTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Horário de Início</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} value={field.value ?? ''} />
-                          </FormControl>
-                          <FormDescription className="text-left">
-                            Formato HH:MM (ex: 14:00)
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="endTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Horário de Término</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} value={field.value ?? ''} />
-                          </FormControl>
-                          <FormDescription className="text-left">
-                            Formato HH:MM (ex: 18:00)
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
                   <FormField
                     control={form.control}
-                    name="packageType" // Corresponde a 'pacote_escolhido' na API
+                    name="packageType"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Pacote da Festa</FormLabel>
@@ -428,6 +305,7 @@ function CompleteEventDetailsPage() {
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                           value={field.value ?? undefined}
+                          disabled
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -435,7 +313,6 @@ function CompleteEventDetailsPage() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {/* Os valores aqui devem ser as chaves do seu PartyPackageEnum */}
                             <SelectItem value="KIDS">Festa Kids</SelectItem>
                             <SelectItem value="KIDS_MAIS_PARK">Festa Kids + Park</SelectItem>
                             <SelectItem value="PLAY">Festa Play</SelectItem>
@@ -446,13 +323,12 @@ function CompleteEventDetailsPage() {
                           </SelectContent>
                         </Select>
                         <FormDescription className="text-left">
-                          Escolha o pacote contratado (conforme &quot;Pacote de Festas&quot;).
+                          Este foi o pacote contratado com o Espaço Criar.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     <FormField
                       control={form.control}
@@ -461,8 +337,6 @@ function CompleteEventDetailsPage() {
                         <FormItem>
                           <FormLabel>Nº de Adultos Contratados</FormLabel>
                           <FormControl>
-                            {/* React Hook Form lida bem com type="number" retornando número ou string vazia */}
-                            {/* O coerce.number() do Zod ajuda a converter */}
                             <Input
                               type="number"
                               placeholder="Ex: 50"
@@ -471,6 +345,7 @@ function CompleteEventDetailsPage() {
                               onChange={(e) =>
                                 field.onChange(e.target.value === '' ? null : +e.target.value)
                               }
+                              disabled
                             />
                           </FormControl>
                           <FormMessage />
@@ -492,6 +367,7 @@ function CompleteEventDetailsPage() {
                               onChange={(e) =>
                                 field.onChange(e.target.value === '' ? null : +e.target.value)
                               }
+                              disabled
                             />
                           </FormControl>
                           <FormMessage />
@@ -499,7 +375,55 @@ function CompleteEventDetailsPage() {
                       )}
                     />
                   </div>
-
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-4 border-b pb-2">Personalize Sua Festa</h3>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Horário de Início</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="time"
+                              {...field}
+                              value={field.value ?? ''}
+                              className="focus:border-primary focus:ring-2 focus:ring-primary/30"
+                            />
+                          </FormControl>
+                          <FormDescription className="text-left">
+                            Formato HH:MM (ex: 14:00)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="endTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Horário de Término</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="time"
+                              {...field}
+                              value={field.value ?? ''}
+                              className="focus:border-primary focus:ring-2 focus:ring-primary/30"
+                            />
+                          </FormControl>
+                          <FormDescription className="text-left">
+                            Formato HH:MM (ex: 18:00)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
                     control={form.control}
                     name="birthdayPersonName"
@@ -507,7 +431,11 @@ function CompleteEventDetailsPage() {
                       <FormItem>
                         <FormLabel>Nome do Aniversariante</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nome do(a) aniversariante" {...field} />
+                          <Input
+                            placeholder="Nome do(a) aniversariante"
+                            {...field}
+                            className="focus:border-primary focus:ring-2 focus:ring-primary/30"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -528,6 +456,7 @@ function CompleteEventDetailsPage() {
                             onChange={(e) =>
                               field.onChange(e.target.value === '' ? null : +e.target.value)
                             }
+                            className="focus:border-primary focus:ring-2 focus:ring-primary/30"
                           />
                         </FormControl>
                         <FormMessage />
@@ -542,7 +471,11 @@ function CompleteEventDetailsPage() {
                       <FormItem>
                         <FormLabel>Tema da Festa (Opcional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: Super Heróis, Princesas" {...field} />
+                          <Input
+                            placeholder="Ex: Super Heróis, Princesas"
+                            {...field}
+                            className="focus:border-primary focus:ring-2 focus:ring-primary/30"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -551,14 +484,14 @@ function CompleteEventDetailsPage() {
 
                   <FormField
                     control={form.control}
-                    name="description" // Campo de descrição da festa
+                    name="description"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Descrição da Festa (Opcional)</FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder="Detalhes adicionais sobre a festa..."
-                            className="resize-y" // Permite redimensionamento vertical
+                            className="resize-y focus:border-primary focus:ring-2 focus:ring-primary/30"
                             {...field}
                           />
                         </FormControl>
@@ -610,7 +543,11 @@ function CompleteEventDetailsPage() {
                       <FormItem>
                         <FormLabel>Instagram do Cliente (Opcional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://instagram.com/usuario" {...field} />
+                          <Input
+                            placeholder="https://instagram.com/usuario"
+                            {...field}
+                            className="focus:border-primary focus:ring-2 focus:ring-primary/30"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -618,24 +555,27 @@ function CompleteEventDetailsPage() {
                   />
                   <FormField
                     control={form.control}
-                    name="guestNotInListPolicy" // corresponde a 'procedimento_convidado_nao_cadastrado'
+                    name="guestNotInListPolicy"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Procedimento para Convidados Não Cadastrados</FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
-                          value={field.value ?? undefined}
+                          value={field.value || ''}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="focus:border-primary focus:ring-2 focus:ring-primary/30">
                               <SelectValue placeholder="Selecione uma opção" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="contact">Entrar em contato</SelectItem>
-                            <SelectItem value="register">Registrar convidado</SelectItem>
-                            <SelectItem value="deny">Negar entrada</SelectItem>
+                            <SelectItem value="PERMITIR_ANOTAR">
+                              Permitir e Anotar na Lista
+                            </SelectItem>
+                            <SelectItem value="CHAMAR_ANFITRIAO">
+                              Chamar Anfitrião para Autorizar
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </FormItem>
@@ -652,6 +592,7 @@ function CompleteEventDetailsPage() {
                             type="url"
                             placeholder="https://open.spotify.com/playlist/..."
                             {...field}
+                            className="focus:border-primary focus:ring-2 focus:ring-primary/30"
                           />
                         </FormControl>
                         <FormMessage />
@@ -667,7 +608,7 @@ function CompleteEventDetailsPage() {
                         <FormControl>
                           <Textarea
                             placeholder="Observações sobre a festa..."
-                            className="resize-y" // Permite redimensionamento vertical
+                            className="resize-y focus:border-primary focus:ring-2 focus:ring-primary/30"
                             {...field}
                           />
                         </FormControl>
@@ -680,14 +621,15 @@ function CompleteEventDetailsPage() {
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {isLoading ? 'Salvando Festa...' : 'Criar Festa'}
+                {isLoading
+                  ? 'Salvando...'
+                  : eventStatus === 'RASCUNHO'
+                    ? 'Finalizar Agendamento e Salvar'
+                    : 'Salvar Alterações'}
               </Button>
             </form>
           </Form>
         </CardContent>
-        {/* <CardFooter>
-          <p>Rodapé do card, se necessário.</p>
-        </CardFooter> */}
       </Card>
     </div>
   )

@@ -46,10 +46,15 @@ function LoginPage() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (auth.isAuthenticated) {
-      navigate('/staff/dashboard', { replace: true })
+    if (auth.isAuthenticated && auth.user) {
+      // Se o usuário já está logado, verificamos seu tipo
+      if (auth.user.userType === 'Adm_espaco') {
+        navigate('/staff/dashboard', { replace: true })
+      } else if (auth.user.userType === 'Adm_festa') {
+        navigate('/organizer/dashboard', { replace: true })
+      }
     }
-  }, [auth.isAuthenticated, navigate])
+  }, [auth.isAuthenticated, auth.user, navigate])
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -81,7 +86,14 @@ function LoginPage() {
         userType: usuario.tipoUsuario,
       }
       auth.login(authenticatedUserData, token)
-      navigate('/staff/dashboard', { replace: true })
+
+      if (authenticatedUserData.userType === 'Adm_espaco') {
+        navigate('/staff/dashboard', { replace: true })
+      } else if (authenticatedUserData.userType === 'Adm_festa') {
+        navigate('/organizer/dashboard', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
     } catch (error: unknown) {
       // eslint-disable-next-line no-console
       console.error('Erro na chamada de API de login:', error)

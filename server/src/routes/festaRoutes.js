@@ -21,7 +21,6 @@ router.patch('/:idFesta', verificarTokenJWT, festaController.atualizarFesta);
 // DELETE /festa/:idFesta -> Deleta uma festa específica.
 router.delete('/:idFesta', verificarTokenJWT, festaController.deletarFesta);
 
-
 // --- ROTAS PARA CONVIDADOS DE UMA FESTA ---
 
 // POST /festa/:idFesta/convidados -> Adiciona um convidado.
@@ -31,21 +30,45 @@ router.post('/:idFesta/convidados', verificarTokenJWT, festaController.adicionar
 router.get('/:idFesta/convidados', verificarTokenJWT, festaController.listarConvidadosDaFesta);
 
 // GET /festa/:idFesta/convidados/buscar -> Busca convidados por nome.
-router.get('/:idFesta/convidados/buscar', verificarTokenJWT, festaController.buscarConvidadosPorNome);
+router.get(
+  '/:idFesta/convidados/buscar',
+  verificarTokenJWT,
+  festaController.buscarConvidadosPorNome
+);
 
 // GET /festa/:idFesta/convidados/:idConvidado -> Busca um convidado específico.
-router.get('/:idFesta/convidados/:idConvidado', verificarTokenJWT, festaController.buscarConvidadoPorId);
+router.get(
+  '/:idFesta/convidados/:idConvidado',
+  verificarTokenJWT,
+  festaController.buscarConvidadoPorId
+);
 
 // PATCH /festa/:idFesta/convidados/:idConvidado -> Atualiza um convidado.
-router.patch('/:idFesta/convidados/:idConvidado', verificarTokenJWT, festaController.atualizarConvidado);
+router.patch(
+  '/:idFesta/convidados/:idConvidado',
+  verificarTokenJWT,
+  festaController.atualizarConvidado
+);
 
 // DELETE /festa/:idFesta/convidados/:idConvidado -> Deleta um convidado.
-router.delete('/:idFesta/convidados/:idConvidado', verificarTokenJWT, festaController.deletarConvidado);
+router.delete(
+  '/:idFesta/convidados/:idConvidado',
+  verificarTokenJWT,
+  festaController.deletarConvidado
+);
 
 // PATCH /festa/:idFesta/convidados/:idConvidado/checkin -> Realiza o check-in.
-router.patch('/:idFesta/convidados/:idConvidado/checkin', verificarTokenJWT, festaController.checkinConvidado);
+router.patch(
+  '/:idFesta/convidados/:idConvidado/checkin',
+  verificarTokenJWT,
+  festaController.checkinConvidado
+);
 
 // PATCH /festa/:idFesta/convidados/:idConvidado/checkout -> Realiza o check-out.
-router.patch('/:idFesta/convidados/:idConvidado/checkout', verificarTokenJWT, festaController.checkoutConvidado);
+router.patch(
+  '/:idFesta/convidados/:idConvidado/checkout',
+  verificarTokenJWT,
+  festaController.checkoutConvidado
+);
 
 export default router;

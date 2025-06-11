@@ -33,13 +33,15 @@ const StaffDashboardPage = () => {
     const fetchEvents = async () => {
       try {
         const response = await api.get('/festa/listar')
-        const mappedEvents: AppEvent[] = response.data.festas.map((eventFromApi: ApiEventResponse) => ({
-          id: eventFromApi.id,
-          name: eventFromApi.nome_festa,
-          date: eventFromApi.data_festa,
-          organizerName: eventFromApi.organizador?.nome,
-        }));
-      setEvents(mappedEvents);
+        const mappedEvents: AppEvent[] = response.data.festas.map(
+          (eventFromApi: ApiEventResponse) => ({
+            id: eventFromApi.id,
+            name: eventFromApi.nome_festa,
+            date: eventFromApi.data_festa,
+            organizerName: eventFromApi.organizador?.nome,
+          }),
+        )
+        setEvents(mappedEvents)
       } catch (error) {
         console.error('Erro ao buscar eventos:', error)
         setError('Erro ao buscar eventos')

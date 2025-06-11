@@ -46,6 +46,20 @@ Este projeto é um monorepo gerenciado com Yarn Workspaces e Plug'n'Play (PnP). 
     * **Server (`server/.env`)**
     * Consulte a documentação específica de cada workspace (ou o código) para as variáveis necessárias conforme o projeto evolui.
 
+4. **Configuração do Editor (VS Code):** <---- **ADICIONE AQUI**
+    Para garantir que o VS Code utilize a versão correta do TypeScript gerenciada pelo Yarn PnP, siga estes passos após a instalação das dependências:
+
+    1. **Instale os SDKs do Editor:**
+
+        ```bash
+        yarn dlx @yarnpkg/sdks vscode
+        ```
+
+    2. **Selecione a Versão do TypeScript:**
+        * Abra um arquivo `.ts` ou `.tsx`.
+        * Use o comando `TypeScript: Select TypeScript Version...` na paleta de comandos (Ctrl+Shift+P).
+        * Selecione **"Use Workspace Version"**. O VS Code deve confirmar que está usando a versão do SDK do seu workspace.
+
 ## Rodando o Projeto em Desenvolvimento
 
 * **Para rodar cliente e servidor simultaneamente (recomendado):**
