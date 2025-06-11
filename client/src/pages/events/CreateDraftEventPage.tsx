@@ -34,7 +34,6 @@ import { useAuth } from '@/contexts/authContextCore'
 import { cn } from '@/lib/utils'
 import api from '@/services/api'
 
-// Define a schema for the form using zod
 const createDraftFormSchema = z.object({
   organizerName: z.string().min(1, 'Nome do contratante é obrigatório.'),
   organizerEmail: z
@@ -42,7 +41,6 @@ const createDraftFormSchema = z.object({
     .min(1, 'Email do contratante é obrigatório.')
     .email('Formato de email inválido.'),
   organizerPhone: z.string().min(10, 'Telefone do contratante é obrigatório (com DDD).'),
-  organizerPassword: z.string().min(6, 'Senha inicial deve ter no mínimo 6 caracteres.'),
 
   partyName: z.string().min(1, 'Um nome para a festa é obrigatório.'),
   partyDate: z.date({ required_error: 'Data da festa é obrigatória.' }),
@@ -54,23 +52,19 @@ const createDraftFormSchema = z.object({
   contractedAdults: z.coerce.number().int().positive({ message: 'Deve ser um número positivo.' }),
 })
 
-// Define TypeScript types for form values
 type CreateDraftFormValues = z.infer<typeof createDraftFormSchema>
 
-// Component for creating a draft event
 function CreateDraftEventPage() {
   const [isLoading, setIsLoading] = useState(false)
   useAuth()
   const navigate = useNavigate()
 
-  // Initialize the form with react-hook-form and zod
   const form = useForm<CreateDraftFormValues>({
     resolver: zodResolver(createDraftFormSchema),
     defaultValues: {
       organizerName: '',
       organizerEmail: '',
       organizerPhone: '',
-      organizerPassword: '',
       partyName: '',
       partyDate: new Date(),
       packageType: 'KIDS',
@@ -79,53 +73,41 @@ function CreateDraftEventPage() {
     },
   })
 
-  // Function to handle form submission
   async function onSubmit(values: CreateDraftFormValues) {
-    const contratantePayload = {
-      nome: values.organizerName,
-      email: values.organizerEmail,
-      senha: values.organizerPassword,
-      telefone: values.organizerPhone,
-    }
-    try {
-      // Log the payload being sent
-      console.info(
-        'Enviando dados do contratante para /auth/register/admFesta:',
-        contratantePayload,
-      )
-      const responseContratante = await api.post('/auth/register/admFesta', contratantePayload)
+    setIsLoading(true)
 
-      const novoContratante = responseContratante.data.usuario
-      if (!novoContratante || !novoContratante.id) {
-        throw new Error('Falha ao obter ID do contratante recém-criado.')
-      }
-
-      const festaPayload = {
-        // Map form fields to API fields
+    const payload = {
+      dadosFesta: {
         nome_festa: values.partyName,
-        data_festa: format(values.partyDate, 'yyyy-MM-dd'), // Format the date
+        data_festa: format(values.partyDate, 'yyyy-MM-dd'),
         pacote_escolhido: values.packageType,
         numero_criancas_contratado: values.contractedChildren,
         numero_adultos_contratado: values.contractedAdults,
-        id_organizador: novoContratante.id, // Use ID returned from first API call
-      }
-      console.info('Enviando dados da festa para /festa/criar-festa:', festaPayload)
-      await api.post('/festa/criar-festa', festaPayload)
+      },
+      dadosCliente: {
+        nome: values.organizerName,
+        email: values.organizerEmail,
+        telefone: values.organizerPhone,
+      },
+    }
 
-      // Success notification
+    try {
+      // eslint-disable-next-line no-console
+      console.info('Enviando dados para /festa/criar:', payload)
+
+      await api.post('/festa/criar', payload)
+
       toast.success('Agendamento iniciado com sucesso!', {
-        description: `O acesso foi enviado para ${values.organizerEmail}.`,
+        description: `Um link de acesso será enviado para o WhatsApp de ${values.organizerName}.`,
       })
-      navigate('/staff/dashboard') // Redirect back to staff dashboard
+      navigate('/staff/dashboard')
     } catch (error: unknown) {
       let errorMessage = 'Ocorreu um erro inesperado. Tente novamente.'
-
       if (axios.isAxiosError(error) && error.response) {
         errorMessage = error.response.data.error || error.response.data.message || errorMessage
       } else if (error instanceof Error) {
         errorMessage = error.message
       }
-
       toast.error('Falha ao criar agendamento', {
         description: errorMessage,
       })
@@ -146,7 +128,6 @@ function CreateDraftEventPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* Section: Organizer Details */}
               <div>
                 <h3 className="text-lg font-medium mb-4 border-b pb-2">Dados do Contratante</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -192,26 +173,9 @@ function CreateDraftEventPage() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="organizerPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Senha Inicial para o Contratante</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Senha de acesso" {...field} />
-                        </FormControl>
-                        <FormDescription className="text-left">
-                          Pode ser alterada por ele depois.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
               </div>
 
-              {/* Section: Essential Party Details */}
               <div>
                 <h3 className="text-lg font-medium my-4 border-b pb-2">
                   Dados Essenciais da Festa
