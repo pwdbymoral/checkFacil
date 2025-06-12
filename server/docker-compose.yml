@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  espacocriar-api:
+  espacocriar-api-v2:
     build: .
-    container_name: espacocriar-api
+    container_name: espacocriar-api-v2
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.espacocriar.rule=Host(`espacocriar.4growthbr.space`)"
