@@ -26,12 +26,12 @@ async function LigarServidor() {
   try {
     await sequelize.authenticate();
 
-    // eslint-disable-next-line no-console
+    
     console.log('Conexão com o MySQL estabelecida com sucesso.');
 
     app.listen(port, () => {
-      // eslint-disable-next-line no-console
-      console.log(`Servidor rodando na porta ${port} em http://localhost:${port}`);
+     
+      console.log(`Servidor rodando na porta ${port}`);
     });
   } catch (error) {
     console.error('Não foi possível conectar ao banco de dados ou iniciar o servidor:', error);
