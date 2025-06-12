@@ -110,7 +110,7 @@ const StaffDashboardPage = () => {
                   <div className="flex flex-row w-full md:w-auto md:max-w-xs gap-2">
                     <Button asChild className="flex-1" variant={'outline'}>
                       <Link
-                        to={`/staff/event/${event.id}`}
+                        to={`/staff/event/${event.id}/details`}
                         className="text-primary hover:opacity-80"
                       >
                         <FilePenLine className="h-5 w-5 sm:mr-2" />
