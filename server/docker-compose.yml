@@ -1,25 +1,17 @@
-version: "3.9"
+version: '3'
 
 services:
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: checkfacil-api
-    restart: always
-    expose:
-      - "3001"
-    environment:
-      - NODE_ENV=production
+  espacocriar-api:
+    build: .
+    container_name: espacocriar-api
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.checkfacil.rule=Host(`api.checkfacil.com.br`)"
-      - "traefik.http.routers.checkfacil.entrypoints=websecure"
-      - "traefik.http.routers.checkfacil.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.espacocriar.rule=Host(`espacocriar.4growthbr.space`)"
+      - "traefik.http.services.espacocriar-api.loadbalancer.server.port=3001"
+      - "traefik.http.routers.espacocriar.entrypoints=http"
     networks:
-      - traefik_net
+      - traefik
 
 networks:
-  traefik_net:
+  traefik:
     external: true
-    name: 4GTNET
