@@ -5,6 +5,16 @@ import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { AddGuestForm, type AddGuestFormValues } from '@/components/guests/AddGuestForm'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -72,6 +82,7 @@ function GuestManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingGuest, setEditingGuest] = useState<AppGuest | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [guestToDelete, setGuestToDelete] = useState<AppGuest | null>(null)
 
   const fetchGuests = useCallback(async () => {
     if (!eventId) return
@@ -187,9 +198,33 @@ function GuestManagementPage() {
     }
   }
 
-  const handleDelete = (guestId: number) => {
-    // TODO: Lógica para pedir confirmação e chamar a API de deleção
-    toast.info(`Funcionalidade de deletar convidado ${guestId} ainda não implementada.`)
+  const handleDeleteClick = (guest: AppGuest) => {
+    setGuestToDelete(guest) // Guarda o convidado que queremos deletar
+  }
+
+  const confirmDeleteGuest = async () => {
+    if (!guestToDelete || !eventId) return
+
+    // Podemos reusar o estado 'isSubmitting' para o loading do botão de deletar
+    setIsSubmitting(true)
+    try {
+      // Chama o endpoint DELETE
+      await api.delete(`/festa/${eventId}/convidados/${guestToDelete.id}`)
+      toast.success(`Convidado "${guestToDelete.nome_convidado}" removido com sucesso!`)
+
+      await fetchGuests() // Atualiza a lista na tela
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(error.response.data.error || 'Por favor, tente novamente.')
+      } else if (error instanceof Error) {
+        toast.error(error.message)
+      } else {
+        toast.error('Ocorreu um erro inesperado.')
+      }
+    } finally {
+      setIsSubmitting(false)
+      setGuestToDelete(null) // Fecha o diálogo limpando o estado
+    }
   }
 
   return (
@@ -288,7 +323,7 @@ function GuestManagementPage() {
                           variant="ghost"
                           size="icon"
                           className="text-destructive hover:text-destructive"
-                          onClick={() => handleDelete(guest.id)}
+                          onClick={() => handleDeleteClick(guest)}
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Remover</span>
@@ -306,6 +341,32 @@ function GuestManagementPage() {
           )}
         </CardContent>
       </Card>
+      <AlertDialog
+        open={!!guestToDelete}
+        onOpenChange={(isOpen) => !isOpen && setGuestToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso irá remover permanentemente o convidado
+              <strong className="mx-1">{guestToDelete?.nome_convidado}</strong>
+              da lista desta festa.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setGuestToDelete(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteGuest}
+              disabled={isSubmitting}
+              className="bg-destructive"
+            >
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sim, deletar convidado
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
