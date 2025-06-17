@@ -72,9 +72,9 @@ export default function OrganizerDashboardPage() {
               {events.map((event) => (
                 <li
                   key={event.id}
-                  className="border-b last:border-b-0 pb-4 last:pb-0 flex flex-col md:flex-row justify-between md:items-center gap-4"
+                  className="border-b last:border-b-0 pb-4 last:pb-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4"
                 >
-                  <div>
+                  <div className="flex-grow">
                     <h3 className="text-lg font-semibold">{event.name}</h3>
                     <p className="text-sm text-muted-foreground">
                       Data: {new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
@@ -83,7 +83,7 @@ export default function OrganizerDashboardPage() {
                       Status: <span className="font-medium">{event.status}</span>
                     </p>
                   </div>
-                  <div className="flex flex-row w-full md:w-auto md:max-w-xs gap-2">
+                  <div className="flex flex-row shrink-0 gap-2 w-full sm:w-auto">
                     <Button asChild variant={'outline'} size={'default'} className="flex-1">
                       <Link
                         to={`/organizer/event/${event.id}/details`}

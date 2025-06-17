@@ -98,16 +98,18 @@ const StaffDashboardPage = () => {
               {events.map((event) => (
                 <li
                   key={event.id}
-                  className="border-b last:border-b-0 pb-4 last:pb-0 flex flex-col md:flex-row justify-between md:items-center gap-4"
+                  className="border-b last:border-b-0 pb-4 last:pb-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4"
                 >
-                  <h3 className="text-lg font-semibold">{event.name}</h3>
-                  <p className="text-muted-foreground break-words text-pretty">
-                    Data: {new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
-                  </p>
-                  <p className="text-muted-foreground break-words text-pretty">
-                    Organizador: {event.organizerName || 'Desconhecido'}
-                  </p>
-                  <div className="flex flex-row w-full md:w-auto md:max-w-xs gap-2">
+                  <div className="flex-grow">
+                    <h3 className="text-lg font-semibold">{event.name}</h3>
+                    <p className="text-muted-foreground break-words text-pretty">
+                      Data: {new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                    </p>
+                    <p className="text-muted-foreground break-words text-pretty">
+                      Organizador: {event.organizerName || 'Desconhecido'}
+                    </p>
+                  </div>
+                  <div className="flex flex-row shrink-0 gap-2 w-full sm:w-auto">
                     <Button asChild className="flex-1" variant={'outline'}>
                       <Link
                         to={`/staff/event/${event.id}/details`}
