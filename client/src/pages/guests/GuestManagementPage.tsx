@@ -1,10 +1,20 @@
-import { Loader2, Pencil, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import axios from 'axios'
+import { Loader2, Pencil, PlusCircle, Trash2 } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { AddGuestForm, type AddGuestFormValues } from '@/components/guests/AddGuestForm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -39,39 +49,75 @@ function GuestManagementPage() {
   const { eventId } = useParams<{ eventId: string }>()
   const [guests, setGuests] = useState<AppGuest[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [partyName, setPartyName] = useState('')
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  useEffect(() => {
-    if (!eventId) {
-      return
+  const fetchGuests = useCallback(async () => {
+    if (!eventId) return
+    try {
+      const response = await api.get(`/festa/${eventId}/convidados`)
+      const mappedGuests: AppGuest[] = response.data.map((guestFromApi: ApiGuestResponse) => ({
+        id: guestFromApi.id,
+        name: guestFromApi.nome_convidado,
+        type: guestFromApi.tipo_convidado.replace(/_/g, ' ').toLowerCase(),
+        guardianName: guestFromApi.nome_responsavel,
+        guardianPhone: guestFromApi.telefone_responsavel,
+        status: guestFromApi.confirmou_presenca,
+        isCheckedIn: !!guestFromApi.checkin_at,
+      }))
+      setGuests(mappedGuests)
+    } catch (error) {
+      console.error('Erro ao buscar convidados:', error)
+      toast.error('Não foi possível carregar a lista de convidados.')
     }
+  }, [eventId]) // Dependência do useCallback
 
-    const fetchGuests = async () => {
+  // Busca os dados iniciais
+  useEffect(() => {
+    if (!eventId) return
+    const fetchInitialData = async () => {
       setIsLoading(true)
+      await fetchGuests()
       try {
-        const response = await api.get(`/festa/${eventId}/convidados`)
-        const mappedGuests: AppGuest[] = response.data.map((guestFromApi: ApiGuestResponse) => ({
-          id: guestFromApi.id,
-          name: guestFromApi.nome_convidado,
-          type: guestFromApi.tipo_convidado.replace('_', ' ').toLowerCase(), // Formata para exibição
-          guardianName: guestFromApi.nome_responsavel,
-          guardianPhone: guestFromApi.telefone_responsavel,
-          status: guestFromApi.confirmou_presenca,
-          isCheckedIn: !!guestFromApi.checkin_at,
-        }))
-        setGuests(mappedGuests)
         const eventResponse = await api.get(`/festa/${eventId}`)
         setPartyName(eventResponse.data.nome_festa)
-      } catch (error) {
-        console.error('Erro ao buscar convidados:', error)
-        toast.error('Não foi possível carregar a lista de convidados.')
-      } finally {
-        setIsLoading(false)
+      } catch {
+        toast.error('Não foi possível carregar o nome da festa.')
       }
+      setIsLoading(false)
     }
+    fetchInitialData()
+  }, [eventId, fetchGuests]) // Adicionado fetchGuests como dependência
 
-    fetchGuests()
-  }, [eventId])
+  // Função para lidar com a submissão do formulário
+  const handleAddGuestSubmit = async (data: AddGuestFormValues) => {
+    // TIPO CORRIGIDO AQUI
+    if (!eventId) return
+    setIsSubmitting(true)
+    try {
+      await api.post(`/festa/${eventId}/convidados`, data)
+      toast.success('Convidado adicionado com sucesso!')
+      setIsDialogOpen(false)
+      await fetchGuests() // Atualiza a lista
+    } catch (error: unknown) {
+      let errorMessage = 'Ocorreu um erro inesperado.'
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage =
+          error.response.data.error ||
+          error.response.data.message ||
+          'Erro ao processar a solicitação.'
+      } else if (error instanceof Error) {
+        // Se for um erro genérico do JavaScript, pegamos a mensagem
+        errorMessage = error.message
+      }
+      toast.error('Falha ao adicionar convidado.', {
+        description: errorMessage,
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const handleEdit = (guestId: number) => {
     // TODO: Lógica para abrir modal de edição
@@ -85,19 +131,29 @@ function GuestManagementPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Gerenciar Convidados</h1>
-        <p className="text-lg text-muted-foreground">
-          {/* Adicione o nome da festa aqui quando a busca estiver implementada */}
-          Festa com ID: {eventId}
-        </p>
+      <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Gerenciar Convidados</h1>
+          {partyName && <p className="text-lg text-muted-foreground">{partyName}</p>}
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="w-full mt-4 sm:w-auto sm:mt-0">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Convidados
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Adicionar Novo Convidado</DialogTitle>
+              <DialogDescription>
+                Preencha os dados abaixo para adicionar um novo convidado à lista.
+              </DialogDescription>
+            </DialogHeader>
+            <AddGuestForm onSubmit={handleAddGuestSubmit} isLoading={isSubmitting} />
+          </DialogContent>
+        </Dialog>
       </header>
-
-      {/* TODO: Formulário para adicionar convidados virá aqui em um <Card> */}
-      <div className="mb-8 p-6 bg-card border rounded-lg">
-        <h2 className="text-2xl font-semibold mb-4">Adicionar Novos Convidados</h2>
-        <p className="text-muted-foreground">Em breve...</p>
-      </div>
 
       <Card>
         <CardHeader>
