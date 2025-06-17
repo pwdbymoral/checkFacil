@@ -28,19 +28,37 @@ import api from '@/services/api'
 interface ApiGuestResponse {
   id: number
   nome_convidado: string
-  tipo_convidado: string
-  nome_responsavel?: string
-  telefone_responsavel?: string
+  tipo_convidado:
+    | 'ADULTO_PAGANTE'
+    | 'CRIANCA_PAGANTE'
+    | 'CRIANCA_ATE_1_ANO'
+    | 'BABA'
+    | 'ANFITRIAO_FAMILIA_DIRETA'
+    | 'ACOMPANHANTE_ATIPICO'
+  data_nascimento?: string | null
+  e_crianca_atipica?: boolean
+  telefone_convidado?: string | null
+  nome_responsavel?: string | null
+  telefone_responsavel?: string | null
+  nome_acompanhante?: string | null
+  telefone_acompanhante?: string | null
+  observacao_convidado?: string | null
   confirmou_presenca: 'PENDENTE' | 'SIM' | 'NAO'
   checkin_at?: string | null
 }
 
 interface AppGuest {
   id: number
-  name: string
-  type: string
-  guardianName?: string
-  guardianPhone?: string
+  nome_convidado: string
+  tipo_convidado: ApiGuestResponse['tipo_convidado']
+  data_nascimento?: Date | null
+  e_crianca_atipica?: boolean
+  telefone_convidado?: string | null
+  nome_responsavel?: string | null
+  telefone_responsavel?: string | null
+  nome_acompanhante?: string | null
+  telefone_acompanhante?: string | null
+  observacao_convidado?: string | null
   status: 'PENDENTE' | 'SIM' | 'NAO'
   isCheckedIn: boolean
 }
@@ -52,6 +70,8 @@ function GuestManagementPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [partyName, setPartyName] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingGuest, setEditingGuest] = useState<AppGuest | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   const fetchGuests = useCallback(async () => {
     if (!eventId) return
@@ -59,10 +79,18 @@ function GuestManagementPage() {
       const response = await api.get(`/festa/${eventId}/convidados`)
       const mappedGuests: AppGuest[] = response.data.map((guestFromApi: ApiGuestResponse) => ({
         id: guestFromApi.id,
-        name: guestFromApi.nome_convidado,
-        type: guestFromApi.tipo_convidado.replace(/_/g, ' ').toLowerCase(),
-        guardianName: guestFromApi.nome_responsavel,
-        guardianPhone: guestFromApi.telefone_responsavel,
+        nome_convidado: guestFromApi.nome_convidado,
+        tipo_convidado: guestFromApi.tipo_convidado,
+        data_nascimento: guestFromApi.data_nascimento
+          ? new Date(guestFromApi.data_nascimento.replace(/-/g, '/'))
+          : null,
+        e_crianca_atipica: guestFromApi.e_crianca_atipica,
+        telefone_convidado: guestFromApi.telefone_convidado,
+        nome_responsavel: guestFromApi.nome_responsavel,
+        telefone_responsavel: guestFromApi.telefone_responsavel,
+        nome_acompanhante: guestFromApi.nome_acompanhante,
+        telefone_acompanhante: guestFromApi.telefone_acompanhante,
+        observacao_convidado: guestFromApi.observacao_convidado,
         status: guestFromApi.confirmou_presenca,
         isCheckedIn: !!guestFromApi.checkin_at,
       }))
@@ -119,9 +147,44 @@ function GuestManagementPage() {
     }
   }
 
-  const handleEdit = (guestId: number) => {
-    // TODO: Lógica para abrir modal de edição
-    toast.info(`Funcionalidade de editar convidado ${guestId} ainda não implementada.`)
+  const handleEditClick = (guest: AppGuest) => {
+    setEditingGuest(guest)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditGuestSubmit = async (data: AddGuestFormValues) => {
+    if (!editingGuest || !eventId) return
+
+    setIsSubmitting(true)
+    try {
+      // Chama o endpoint PATCH para atualizar o convidado
+      await api.patch(
+        `/festa/<span class="math-inline">\{eventId\}/convidados/</span>{editingGuest.id}`,
+        data,
+      )
+      toast.success('Convidado atualizado com sucesso!')
+      setIsEditDialogOpen(false) // Fecha o modal
+      setEditingGuest(null) // Limpa o estado de edição
+      await fetchGuests() // Atualiza a lista
+    } catch (error: unknown) {
+      // Use 'unknown' em vez de 'any'
+      let errorMessage = 'Ocorreu um erro inesperado.'
+
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage =
+          error.response.data.error ||
+          error.response.data.message ||
+          'Erro ao processar a solicitação.'
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+
+      toast.error('Falha ao atualizar convidado.', {
+        description: errorMessage,
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleDelete = (guestId: number) => {
@@ -150,10 +213,40 @@ function GuestManagementPage() {
                 Preencha os dados abaixo para adicionar um novo convidado à lista.
               </DialogDescription>
             </DialogHeader>
-            <AddGuestForm onSubmit={handleAddGuestSubmit} isLoading={isSubmitting} />
+            <AddGuestForm onSubmit={handleAddGuestSubmit} isLoading={isSubmitting} mode="add" />
           </DialogContent>
         </Dialog>
       </header>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Editar Convidado</DialogTitle>
+            <DialogDescription>
+              Altere os dados abaixo e clique em &quot;Salvar Alterações&quot;.
+            </DialogDescription>
+          </DialogHeader>
+          {editingGuest && (
+            <AddGuestForm
+              onSubmit={handleEditGuestSubmit}
+              isLoading={isSubmitting}
+              initialValues={{
+                nome_convidado: editingGuest.nome_convidado,
+                tipo_convidado: editingGuest.tipo_convidado,
+                data_nascimento: editingGuest.data_nascimento,
+                e_crianca_atipica: editingGuest.e_crianca_atipica ?? false,
+                telefone_convidado: editingGuest.telefone_convidado ?? '',
+                nome_responsavel: editingGuest.nome_responsavel ?? '',
+                telefone_responsavel: editingGuest.telefone_responsavel ?? '',
+                nome_acompanhante: editingGuest.nome_acompanhante ?? '',
+                telefone_acompanhante: editingGuest.telefone_acompanhante ?? '',
+                observacao_convidado: editingGuest.observacao_convidado ?? '',
+              }}
+              mode="edit"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader>
@@ -178,14 +271,16 @@ function GuestManagementPage() {
               <TableBody>
                 {guests.map((guest) => (
                   <TableRow key={guest.id}>
-                    <TableCell className="font-medium">{guest.name}</TableCell>
-                    <TableCell className="hidden md:table-cell capitalize">{guest.type}</TableCell>
+                    <TableCell className="font-medium">{guest.nome_convidado}</TableCell>
+                    <TableCell className="hidden md:table-cell capitalize">
+                      {guest.tipo_convidado}
+                    </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      {guest.guardianName || 'N/A'}
+                      {guest.nome_responsavel || 'N/A'}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(guest.id)}>
+                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(guest)}>
                           <Pencil className="h-4 w-4" />
                           <span className="sr-only">Editar</span>
                         </Button>

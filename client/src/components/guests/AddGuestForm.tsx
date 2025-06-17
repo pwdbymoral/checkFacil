@@ -74,15 +74,23 @@ const addGuestSchema = z
   })
 
 export type AddGuestFormValues = z.infer<typeof addGuestSchema>
+
 interface AddGuestFormProps {
   onSubmit: (data: AddGuestFormValues) => void
   isLoading?: boolean
+  initialValues?: Partial<AddGuestFormValues>
+  mode: 'add' | 'edit'
 }
 
-export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
+export function AddGuestForm({
+  onSubmit,
+  isLoading,
+  initialValues,
+  mode = 'add',
+}: AddGuestFormProps) {
   const form = useForm<AddGuestFormValues>({
     resolver: zodResolver(addGuestSchema),
-    defaultValues: {
+    defaultValues: initialValues || {
       nome_convidado: '',
       tipo_convidado: 'ADULTO_PAGANTE',
       e_crianca_atipica: false,
@@ -95,7 +103,7 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
   }
 
   const watchedGuestType = form.watch('tipo_convidado')
-  const isChild = watchedGuestType.includes('CRIANCA')
+  const isChild = watchedGuestType?.includes('CRIANCA') ?? false
   const showGuestPhone = watchedGuestType === 'ADULTO_PAGANTE' || watchedGuestType === 'BABA'
   const watchedDob = form.watch('data_nascimento')
   const watchedIsAtypical = form.watch('e_crianca_atipica')
@@ -159,7 +167,11 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
             <FormItem>
               <FormLabel>Nome do Convidado</FormLabel>
               <FormControl>
-                <Input placeholder="Nome completo do convidado" {...field} />
+                <Input
+                  placeholder="Nome completo do convidado"
+                  {...field}
+                  className="bg-background"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -173,7 +185,7 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
               <FormItem>
                 <FormLabel>Telefone do Convidado</FormLabel>
                 <FormControl>
-                  <Input placeholder="(XX) XXXXX-XXXX" {...field} />
+                  <Input placeholder="(XX) XXXXX-XXXX" {...field} className="bg-background" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -238,7 +250,7 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
         )}
 
         {isChild && (
-          <div className="p-4 border rounded-md bg-muted/50 space-y-4">
+          <div className="p-4 border rounded-md bg-muted/50 dark:bg-card space-y-4">
             <h4 className="font-semibold">Dados do Responsável</h4>
             <FormField
               control={form.control}
@@ -247,7 +259,7 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
                 <FormItem>
                   <FormLabel>Nome do Responsável</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome do pai ou mãe" {...field} />
+                    <Input placeholder="Nome do pai ou mãe" {...field} className="bg-background" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -260,7 +272,7 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
                 <FormItem>
                   <FormLabel>Telefone do Responsável</FormLabel>
                   <FormControl>
-                    <Input placeholder="(XX) XXXXX-XXXX" {...field} />
+                    <Input placeholder="(XX) XXXXX-XXXX" {...field} className="bg-background" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -276,6 +288,7 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
                     <Textarea
                       placeholder="Ex: Alergia a amendoim, intolerância a lactose..."
                       {...field}
+                      className="bg-background"
                     />
                   </FormControl>
                   <FormMessage />
@@ -285,7 +298,7 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
           </div>
         )}
         {needsCompanion && (
-          <div className="p-4 border rounded-md bg-muted/50 space-y-4">
+          <div className="p-4 border rounded-md bg-muted/50 dark:bg-card space-y-4">
             <h4 className="font-semibold">Dados do Acompanhante (Obrigatório)</h4>
             {/* TODO: Adicionar aqui um checkbox "Mesmo que o responsável?" para facilitar */}
             <FormField
@@ -295,7 +308,11 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
                 <FormItem>
                   <FormLabel>Nome do Acompanhante</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome completo do acompanhante" {...field} />
+                    <Input
+                      placeholder="Nome completo do acompanhante"
+                      {...field}
+                      className="bg-background"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -308,7 +325,7 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
                 <FormItem>
                   <FormLabel>Telefone do Acompanhante</FormLabel>
                   <FormControl>
-                    <Input placeholder="(XX) XXXXX-XXXX" {...field} />
+                    <Input placeholder="(XX) XXXXX-XXXX" {...field} className="bg-background" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -319,7 +336,11 @@ export function AddGuestForm({ onSubmit, isLoading }: AddGuestFormProps) {
 
         <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          Adicionar Convidado à Lista
+          {isLoading
+            ? 'Salvando...'
+            : mode === 'add'
+              ? 'Adicionar Convidado à Lista'
+              : 'Salvar Alterações'}
         </Button>
       </form>
     </Form>
